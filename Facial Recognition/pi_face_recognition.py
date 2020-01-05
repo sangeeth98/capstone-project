@@ -1,4 +1,4 @@
-# USAGE
+  # USAGE
 # python pi_face_recognition.py --cascade haarcascade_frontalface_default.xml --encodings encodings.pickle
 
 # import the necessary packages
@@ -14,6 +14,9 @@ import cv2
 
 from time import sleep
 import datetime
+names = []
+na_dict={}
+
 firebase = firebase.FirebaseApplication('https://capstone-prototype-7b1f9.firebaseio.com/', None)
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
@@ -62,8 +65,7 @@ while True:
 
 	# compute the facial embeddings for each face bounding box
 	encodings = face_recognition.face_encodings(rgb, boxes)
-	names = []
-
+	
 	# loop over the facial embeddings
 	for encoding in encodings:
 		# attempt to match each face in the input image to our known
@@ -92,15 +94,20 @@ while True:
 			name = max(counts, key=counts.get)
 		
 		# update the list of names
-		if name not in names:
-			names.append(name)
-					
-		na_dic={}
-		for i in range(len(names)):
-						x=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-						firebase.patch('/Attendence/',{x:names[i]})
-						na_dic[x]=names[i]
-						sleep(2)
+			if name in names:
+				x=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+				y=na_dict[name]
+				y=y+1
+				na_dict[name]=y
+				firebase.patch('/Monitoring/'+name,{na_dict[name]:x})
+			else:
+				names.append(name)
+				x=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+				na_dict[name]=1
+				firebase.patch('/Monitoring/'+name,{na_dict[name]:x})
+			sleep(5)		
+		
+		
 	# loop over the recognized faces
 	for ((top, right, bottom, left), name) in zip(boxes, names):
 		# draw the predicted face name on the image
@@ -111,6 +118,8 @@ while True:
 			0.75, (0, 255, 0), 2)
 
 	# display the image to our screen
+						   
+						
 	cv2.imshow("Frame", frame)
 	key = cv2.waitKey(1) & 0xFF
 
