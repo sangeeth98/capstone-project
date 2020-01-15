@@ -215,3 +215,6 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+
+# ignore pickle files
+*.pickle
