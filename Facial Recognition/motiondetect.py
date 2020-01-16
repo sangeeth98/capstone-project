@@ -83,8 +83,6 @@ def motion_detection():
             t = time.localtime()
             current_time = time.strftime("%H:%M:%S", t)
             firebase.patch('/Room Occupied/R0088/'+today,{current_time:text})
-            
-         sleep(5)   
 
         ''' now draw text and timestamp on security feed '''
         font = cv2.FONT_HERSHEY_SIMPLEX 
