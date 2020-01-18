@@ -88,10 +88,24 @@ while True:
         t = time.localtime()
         current_time = time.strftime("%H:%M:%S", t)
         firebase.patch('/Room Occupied/R0088/'+today,{current_time:text})
+        result=firebase.get('/Room Occupied/R0088/'+today,'Occupied')
+        if(result==None):
+            firebase.patch('/Room Occupied/R0088/'+today,{'Occupied':1})
+        else:
+            result=firebase.get('/Room Occupied/R0088/'+today,'Occupied')
+            result+=1
+            firebase.patch('/Room Occupied/R0088/'+today,{'Occupied':result})
     else:
         t = time.localtime()
         current_time = time.strftime("%H:%M:%S", t)
         firebase.patch('/Room Occupied/R0088/'+today,{current_time:text})
+        result=firebase.get('/Room Occupied/R0088/'+today,'Unoccupied')
+        if(result==None):
+            firebase.patch('/Room Occupied/R0088/'+today,{'Unoccupied':1})
+        else:
+            result=firebase.get('/Room Occupied/R0088/'+today,'Unoccupied')
+            result+=1
+            firebase.patch('/Room Occupied/R0088/'+today,{'Unoccupied':result})
     # show the frame and record if the user presses a key
     cv2.imshow("Security Feed", frame)
     cv2.imshow("Thresh", thresh)
