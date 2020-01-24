@@ -1,12 +1,13 @@
 package com.example.capstoneprototype;
 
 import android.content.DialogInterface;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
-import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -27,73 +28,108 @@ public class Monitoring extends AppCompatActivity {
     DatabaseReference db;
     Button activitybtn;
     TextView txtarea;
-    Spinner pSpinner;
+    Spinner pSpinner,dSpinner;
     String pselected;
-    String name,value;
+    String name,value,co,bo;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setContentView(R.layout.activity_monitoring);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            activitybtn=(Button)findViewById(R.id.activitybtn);
-            fire = FirebaseDatabase.getInstance();
-            db = fire.getReference();
-            pSpinner= (Spinner) findViewById(R.id.pselect);
-            db.child("Monitoring").addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_monitoring);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        activitybtn = (Button) findViewById(R.id.activitybtn);
+        fire = FirebaseDatabase.getInstance();
+        db = fire.getReference();
+        pSpinner = (Spinner) findViewById(R.id.pselect);
+        dSpinner = (Spinner) findViewById(R.id.dateselect);
+        db.child("Monitoring").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                    final List<String> prisoners = new ArrayList<String>();
+                final List<String> roomnumbers = new ArrayList<String>();
 
-                    for (DataSnapshot areaSnapshot: dataSnapshot.getChildren()) {
-                        String pName = areaSnapshot.getKey();
-                        prisoners.add(pName);
+                for (DataSnapshot areaSnapshot : dataSnapshot.getChildren()) {
+                    String rName = areaSnapshot.getKey();
+                    roomnumbers.add(rName);
+                }
+                ArrayAdapter<String> areasAdapter = new ArrayAdapter<String>(Monitoring.this, android.R.layout.simple_spinner_item, roomnumbers);
+                areasAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                pSpinner.setAdapter(areasAdapter);
+                pSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                        if (pSpinner.getSelectedItem() != null) {
+                            co = pSpinner.getSelectedItem().toString();
+                            db.child("Monitoring").child(co).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    final List<String> dates = new ArrayList<String>();
+                                    for (DataSnapshot areaSnapshot : dataSnapshot.getChildren()) {
+                                        String date = areaSnapshot.getKey();
+                                        dates.add(date);
+                                    }
+                                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(Monitoring.this, android.R.layout.simple_spinner_item, dates);
+                                    arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                                    dSpinner.setAdapter(arrayAdapter);
+                                    bo = dSpinner.getSelectedItem().toString();
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                }
+                            });
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Select Prisoner First", Toast.LENGTH_SHORT).show();
+                        }
                     }
 
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+                        Toast.makeText(getApplicationContext(), "Nothing Selected", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
 
-                    ArrayAdapter<String> areasAdapter = new ArrayAdapter<String>(Monitoring.this, android.R.layout.simple_spinner_item, prisoners);
-                    areasAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    pSpinner.setAdapter(areasAdapter);
-                }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-            activitybtn.setOnClickListener(new View.OnClickListener(){
-                @Override
-                public void onClick(View view) {
-                    Utils util=new Utils();
-                    txtarea=(TextView)findViewById(R.id.textArea);
-                    util.enableScroll(txtarea);
-                    pselected=pSpinner.getSelectedItem().toString();
-                    db.child("Monitoring").child(pselected).addValueEventListener(new ValueEventListener() {
+        activitybtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Utils util = new Utils();
+                txtarea = (TextView) findViewById(R.id.textArea);
+                util.enableScroll(txtarea);
+                if (co.equals(null) || bo.equals(null))
+                    Toast.makeText(getApplicationContext(), "Nothing Selected", Toast.LENGTH_SHORT).show();
+                else {
+                    db.child("Monitoring").child(co).child(bo).addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             txtarea.setText("");
 
-                            for(DataSnapshot ds : dataSnapshot.getChildren()) {
-                                 name = ds.getKey();
-                                 value= ds.getValue(String.class);
-                                txtarea.append(name+": "+value+"\n");
+                            for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                                name = ds.getKey();
+                                value = ds.getValue(String.class);
+                                txtarea.append(name + ": " + value + "\n");
                                 txtarea.setMovementMethod(new ScrollingMovementMethod());
                             }
 
-                          display(value);
+                            display(value);
                         }
 
                         @Override
                         public void onCancelled(DatabaseError error) {
                             // Failed to read value
-                            Toast.makeText(getApplicationContext(),"Database Error",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Database Error", Toast.LENGTH_SHORT).show();
 
                         }
                     });
 
 
                 }
-            });
+            }
+        });
     }
 
     public void display(String msg)

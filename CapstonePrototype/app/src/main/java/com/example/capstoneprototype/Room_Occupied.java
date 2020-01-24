@@ -132,7 +132,7 @@ public class Room_Occupied extends AppCompatActivity {
                         }
 
                         @Override
-                        public void onCancelled(DatabaseError error) {
+                        public void onCancelled(@NonNull DatabaseError error) {
                             // Failed to read value
                             Toast.makeText(getApplicationContext(), "Database Error", Toast.LENGTH_SHORT).show();
 
