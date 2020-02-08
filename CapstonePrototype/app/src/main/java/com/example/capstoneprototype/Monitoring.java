@@ -70,7 +70,7 @@ public class Monitoring extends AppCompatActivity {
                                     ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(Monitoring.this, android.R.layout.simple_spinner_item, dates);
                                     arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                                     dSpinner.setAdapter(arrayAdapter);
-                                    bo = dSpinner.getSelectedItem().toString();
+
                                 }
 
                                 @Override
@@ -100,6 +100,8 @@ public class Monitoring extends AppCompatActivity {
                 Utils util = new Utils();
                 txtarea = (TextView) findViewById(R.id.textArea);
                 util.enableScroll(txtarea);
+                co=pSpinner.getSelectedItem().toString();
+                bo=dSpinner.getSelectedItem().toString();
                 if (co.equals(null) || bo.equals(null))
                     Toast.makeText(getApplicationContext(), "Nothing Selected", Toast.LENGTH_SHORT).show();
                 else {
@@ -115,7 +117,7 @@ public class Monitoring extends AppCompatActivity {
                                 txtarea.setMovementMethod(new ScrollingMovementMethod());
                             }
 
-                            display(value);
+                            display(name,value);
                         }
 
                         @Override
@@ -132,10 +134,10 @@ public class Monitoring extends AppCompatActivity {
         });
     }
 
-    public void display(String msg)
+    public void display(String time,String place)
     {
         AlertDialog.Builder dialog=new AlertDialog.Builder(Monitoring.this);
-        dialog.setMessage(msg);
+        dialog.setMessage(time+" "+place);
         dialog.setTitle("Latest Activity");
         dialog.setPositiveButton("OKAY",
                 new DialogInterface.OnClickListener() {

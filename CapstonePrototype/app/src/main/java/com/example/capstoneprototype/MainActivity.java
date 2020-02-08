@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -21,18 +22,22 @@ public class MainActivity extends AppCompatActivity {
     EditText login,password;
     Button loginbtn;
     int wrongcre=0;
+    ProgressBar progressBar;
     FirebaseDatabase firedb;
     DatabaseReference db;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        progressBar=(ProgressBar)findViewById(R.id.progressBar);
         login=(EditText)findViewById(R.id.LOGIN);
         password=(EditText)findViewById(R.id.PASSWORD);
         loginbtn=(Button) findViewById(R.id.loginbtn);
+        progressBar.setVisibility(View.GONE);
         loginbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                progressBar.setVisibility(View.VISIBLE);
                 final String logi=login.getText().toString().trim();
                 final String pass=password.getText().toString().trim();
                 firedb=FirebaseDatabase.getInstance();
@@ -52,8 +57,8 @@ public class MainActivity extends AppCompatActivity {
                                     if(pass.equals(next.child("Password").getValue()))
                                     {
 
+                                        progressBar.setVisibility(View.GONE);
                                         Intent intent=new Intent(getApplicationContext(),Navigation.class);
-                                        intent.putExtra("id",logi);
                                         startActivity(intent);
                                         login.setText("");
                                         password.setText("");
@@ -61,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                     else
                                     {
+                                        progressBar.setVisibility(View.GONE);
                                         wrongcre++;
                                         if(wrongcre>4)
                                         {
@@ -77,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         else
                         {
+                            progressBar.setVisibility(View.GONE);
                             wrongcre++;
                             if(wrongcre>4)
                             {
