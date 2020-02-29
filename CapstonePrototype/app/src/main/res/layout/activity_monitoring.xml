@@ -9,37 +9,36 @@
         android:layout_height="match_parent"
         >
 
-    <TextView
-        android:id="@+id/textView4"
-        android:layout_width="172dp"
-        android:layout_height="31dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="56dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="Show Activity"
-        android:textColor="@color/common_google_signin_btn_text_dark_focused"
-        android:textAlignment="center"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.367"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.017" />
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="172dp"
+            android:layout_height="31dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="56dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="Show Activity"
+            android:textAlignment="center"
+            android:textColor="#08470A"
+            android:textSize="24sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.367"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.017" />
 
         <Button
             android:id="@+id/activitybtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Click Me"
-            tools:layout_editor_absoluteX="315dp"
-            tools:layout_editor_absoluteY="949dp"
             android:layout_margin="20dp"
+            android:text="Click Me"
+            android:textColor="#FF5722"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.374"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/dateselect"/>
+            app:layout_constraintTop_toBottomOf="@+id/dateselect" />
 
         <TextView
             android:id="@+id/textArea"

@@ -40,7 +40,6 @@ public class Navigation extends AppCompatActivity
     DatabaseReference db;
     long ol,ul;
     Spinner roomsp,datesp;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,7 +47,8 @@ public class Navigation extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         roomsp=(Spinner)findViewById(R.id.roomnosp);
         datesp=(Spinner)findViewById(R.id.datesp);
-
+        final Intent int2=getIntent();
+        final String user=int2.getStringExtra("user");
         db=FirebaseDatabase.getInstance().getReference();
         db.child("Room Occupied").addValueEventListener(new ValueEventListener() {
             @Override
@@ -138,10 +138,12 @@ public class Navigation extends AppCompatActivity
 //Toast.makeText(Navigation.this,ol+"1"+ul,Toast.LENGTH_SHORT).show();
         setSupportActionBar(toolbar);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setImageResource(R.mipmap.ic_launcheremergency);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                Intent intent=new Intent(getApplicationContext(),Emergency.class);
+               intent.putExtra("user",user);
                startActivity(intent);
             }
         });
@@ -206,7 +208,22 @@ public class Navigation extends AppCompatActivity
         } else if (id == R.id.nav_send) {
 
         }
-
+        else if(id==R.id.nav_view_profile)
+        {
+           Intent inte2=getIntent();
+           String user=inte2.getStringExtra("user");
+            Intent intent=new Intent(getApplicationContext(),ViewProfile.class);
+            intent.putExtra("user",user);
+            startActivity(intent);
+        }
+        else if(id==R.id.nav_settings)
+        {
+            Intent inte2=getIntent();
+            String user=inte2.getStringExtra("user");
+            Intent intent=new Intent(getApplicationContext(),Settings.class);
+            intent.putExtra("user",user);
+            startActivity(intent);
+        }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;

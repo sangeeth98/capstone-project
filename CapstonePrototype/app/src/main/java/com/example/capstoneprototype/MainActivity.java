@@ -20,7 +20,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     EditText login,password;
@@ -59,13 +62,17 @@ public class MainActivity extends AppCompatActivity {
 
                             while (iterator.hasNext()) {
                                 DataSnapshot next = (DataSnapshot) iterator.next();
-                                if( logi.equals(next.child("name").getValue()))
+                                if( logi.equals(next.child("Empid").getValue()))
                                 {
                                     if(pass.equals(next.child("Password").getValue()))
                                     {
-
+                                        String currentDate=new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
+                                        String currentTime=new SimpleDateFormat("HH-mm-ss", Locale.getDefault()).format(new Date());
+                                        DatabaseReference logd=FirebaseDatabase.getInstance().getReference("Login Activity/"+currentDate+"/"+currentTime+"/");
+                                        logd.setValue(logi);
                                         progressBar.setVisibility(View.GONE);
                                         Intent intent=new Intent(getApplicationContext(),Navigation.class);
+                                        intent.putExtra("user",logi);
                                         startActivity(intent);
                                         login.setText("");
                                         password.setText("");
@@ -115,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
         emer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String logi=login.getText().toString().trim();
+                final String logi=login.getText().toString().trim();
                 if(logi.equals(""))
                 {
                     Toast.makeText(MainActivity.this,"Enter Login",Toast.LENGTH_SHORT).show();
@@ -136,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
                                     m_Text = input.getText().toString();
                                     if (m_Text.equals(emerpass)) {
                                         Intent intent = new Intent(getApplicationContext(), Emergency.class);
+                                        intent.putExtra("user",logi);
                                         startActivity(intent);
                                     }
                                     else

@@ -12,6 +12,16 @@
             android:id="@+id/nav_occupy"
             android:icon="@drawable/ic_menu_gallery"
             android:title="Occupy" />
+        <item
+            android:id="@+id/nav_view_profile"
+            android:icon="@drawable/ic_action_name"
+            android:title="View Profile" />
+        <item
+            android:id="@+id/nav_settings"
+            android:icon="@drawable/ic_action_settings"
+            android:title="Settings" />
+
+
 
     </group>
 

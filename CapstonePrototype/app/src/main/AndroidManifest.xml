@@ -2,25 +2,41 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.capstoneprototype">
+
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launchermine"
         android:label="Prison Monitoring System"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_launchermine"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".Emergency"
+        <activity android:name=".Settings"
+            android:configChanges="orientation|screenSize"
+            android:exported="true"
+            android:label="Settings"
+            android:noHistory="true"
+            android:parentActivityName=".Navigation"></activity>
+        <activity
+            android:name=".ViewProfile"
+            android:configChanges="orientation|screenSize"
+            android:exported="true"
+            android:label="Profile" />
+        <activity
+            android:name=".Emergency"
             android:configChanges="orientation|screenSize"
             android:exported="true"
             android:label="Emergency Section"
-            android:parentActivityName=".MainActivity"></activity>
-        <activity android:name=".NewUser"
+            android:parentActivityName=".MainActivity" />
+        <activity
+            android:name=".NewUser"
             android:configChanges="orientation|screenSize"
             android:exported="true"
             android:label="New User Registration"
-            android:parentActivityName=".MainActivity"/>
+            android:noHistory="true"
+            android:parentActivityName=".MainActivity" />
         <activity
             android:name=".Navigation"
             android:label="@string/title_activity_navigation"
@@ -43,6 +59,7 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
