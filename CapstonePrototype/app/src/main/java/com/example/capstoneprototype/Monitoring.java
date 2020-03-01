@@ -1,9 +1,9 @@
 package com.example.capstoneprototype;
 
 import android.content.DialogInterface;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
@@ -97,14 +97,10 @@ public class Monitoring extends AppCompatActivity {
         activitybtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Utils util = new Utils();
                 txtarea = (TextView) findViewById(R.id.textArea);
-                util.enableScroll(txtarea);
+                Utils.enableScroll(txtarea);
                 co=pSpinner.getSelectedItem().toString();
                 bo=dSpinner.getSelectedItem().toString();
-                if (co.equals(null) || bo.equals(null))
-                    Toast.makeText(getApplicationContext(), "Nothing Selected", Toast.LENGTH_SHORT).show();
-                else {
                     db.child("Monitoring").child(co).child(bo).addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -121,7 +117,7 @@ public class Monitoring extends AppCompatActivity {
                         }
 
                         @Override
-                        public void onCancelled(DatabaseError error) {
+                        public void onCancelled(@NonNull DatabaseError error) {
                             // Failed to read value
                             Toast.makeText(getApplicationContext(), "Database Error", Toast.LENGTH_SHORT).show();
 
@@ -129,7 +125,7 @@ public class Monitoring extends AppCompatActivity {
                     });
 
 
-                }
+
             }
         });
     }

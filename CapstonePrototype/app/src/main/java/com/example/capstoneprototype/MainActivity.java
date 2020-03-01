@@ -2,16 +2,15 @@ package com.example.capstoneprototype;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TableLayout;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -33,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     FirebaseDatabase firedb;
     DatabaseReference db;
     String m_Text,emerpass;
+    boolean b=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
                 db.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        if(dataSnapshot.hasChild(logi))
+                        if(dataSnapshot.hasChild(logi) && !b && dataSnapshot.exists() )
                         {
                             Iterable<DataSnapshot> snapshotIterator = dataSnapshot.getChildren();
                             Iterator<DataSnapshot> iterator = snapshotIterator.iterator();
@@ -66,16 +66,18 @@ public class MainActivity extends AppCompatActivity {
                                 {
                                     if(pass.equals(next.child("Password").getValue()))
                                     {
-                                        String currentDate=new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
+                                        String currentDate=new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
                                         String currentTime=new SimpleDateFormat("HH-mm-ss", Locale.getDefault()).format(new Date());
                                         DatabaseReference logd=FirebaseDatabase.getInstance().getReference("Login Activity/"+currentDate+"/"+currentTime+"/");
                                         logd.setValue(logi);
+                                        b=true;
                                         progressBar.setVisibility(View.GONE);
                                         Intent intent=new Intent(getApplicationContext(),Navigation.class);
                                         intent.putExtra("user",logi);
                                         startActivity(intent);
                                         login.setText("");
                                         password.setText("");
+                                        finish();
 
                                     }
                                     else

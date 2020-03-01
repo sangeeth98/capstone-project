@@ -1,10 +1,9 @@
 package com.example.capstoneprototype;
 
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -105,11 +104,10 @@ public class Room_Occupied extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Utils util = new Utils();
                 txtarea1 = (TextView) findViewById(R.id.textArea1);
                 txtarea2 = (TextView) findViewById(R.id.textArea2);
-                util.enableScroll(txtarea1);
-                util.enableScroll(txtarea2);
+                Utils.enableScroll(txtarea1);
+                Utils.enableScroll(txtarea2);
                 ro=roomsp.getSelectedItem().toString();
                 dss=datesp.getSelectedItem().toString();
                     db.child("Room Occupied").child(ro).child(dss).addValueEventListener(new ValueEventListener() {
