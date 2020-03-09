@@ -23,7 +23,8 @@
             android:name=".ViewProfile"
             android:configChanges="orientation|screenSize"
             android:exported="true"
-            android:label="Profile" />
+            android:label="Profile"
+            android:parentActivityName=".Navigation"/>
         <activity
             android:name=".Emergency"
             android:configChanges="orientation|screenSize"

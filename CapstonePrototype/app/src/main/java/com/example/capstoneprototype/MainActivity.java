@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     FirebaseDatabase firedb;
     DatabaseReference db;
     String m_Text,emerpass;
-    boolean b=false;
+    public static  String logi;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,18 +50,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 progressBar.setVisibility(View.VISIBLE);
-                final String logi=login.getText().toString().trim();
+                logi=login.getText().toString().trim();
                 final String pass=password.getText().toString().trim();
                 db.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        if(dataSnapshot.hasChild(logi) && !b && dataSnapshot.exists() )
+                        if(dataSnapshot.hasChild(logi) )
                         {
                             Iterable<DataSnapshot> snapshotIterator = dataSnapshot.getChildren();
                             Iterator<DataSnapshot> iterator = snapshotIterator.iterator();
-
                             while (iterator.hasNext()) {
-                                DataSnapshot next = (DataSnapshot) iterator.next();
+                                DataSnapshot next = iterator.next();
                                 if( logi.equals(next.child("Empid").getValue()))
                                 {
                                     if(pass.equals(next.child("Password").getValue()))
@@ -70,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
                                         String currentTime=new SimpleDateFormat("HH-mm-ss", Locale.getDefault()).format(new Date());
                                         DatabaseReference logd=FirebaseDatabase.getInstance().getReference("Login Activity/"+currentDate+"/"+currentTime+"/");
                                         logd.setValue(logi);
-                                        b=true;
                                         progressBar.setVisibility(View.GONE);
                                         Intent intent=new Intent(getApplicationContext(),Navigation.class);
                                         intent.putExtra("user",logi);
@@ -78,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
                                         login.setText("");
                                         password.setText("");
                                         finish();
-
                                     }
                                     else
                                     {
@@ -91,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
                                         Toast.makeText(getApplicationContext(),"Wrong Credentials",Toast.LENGTH_SHORT).show();
                                     }
                                 }
+
                             }
                         }
                         else
@@ -102,7 +100,6 @@ public class MainActivity extends AppCompatActivity {
                                 abortapp();
                             }
                             Toast.makeText(getApplicationContext(),"Wrong Credentials",Toast.LENGTH_SHORT).show();
-
                         }
                     }
 
@@ -124,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
         emer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final String logi=login.getText().toString().trim();
+                logi=login.getText().toString().trim();
                 if(logi.equals(""))
                 {
                     Toast.makeText(MainActivity.this,"Enter Login",Toast.LENGTH_SHORT).show();

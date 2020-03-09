@@ -61,11 +61,13 @@ boolean b=false,b2=false;
                                         Toast.makeText(NewUser.this, "User Already Exists", Toast.LENGTH_SHORT).show();
                                     }
                                 }
+                                if(b==false)
+                                {
+                                    Toast.makeText(NewUser.this, "Invalid Employee ID", Toast.LENGTH_SHORT).show();
+                                }
                             }
                         }
-                            if (b = false) {
-                                Toast.makeText(NewUser.this, "Invalid Employee ID", Toast.LENGTH_SHORT).show();
-                            }
+
                     }
 
                     @Override
