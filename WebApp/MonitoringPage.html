@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+	Enter name if Prisoner:<input type="text" id="Pid">
+	<br><br>
+	(Optional)Enter the date:<input type="text" id="Pdate" placeholder="YYYY-MM-DD">
+	<br><br>
+	<button onclick="MonitoringData()">Search</button>
+	
+<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-app.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-database.js"></script>
+
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyBkNkpSNjI4w_v6Ue0M34KSl8Spp_2KuUw",
+    authDomain: "capstone-prototype-7b1f9.firebaseapp.com",
+    databaseURL: "https://capstone-prototype-7b1f9.firebaseio.com",
+    projectId: "capstone-prototype-7b1f9",
+    storageBucket: "capstone-prototype-7b1f9.appspot.com",
+    messagingSenderId: "84439194622",
+    appId: "1:84439194622:web:78f3659951bd9e6e123eaf",
+    measurementId: "G-70RLHN723Z"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  var database=firebase.database();
+  var reqData={};
+  function MonitoringData()
+  { 
+  	var ref=database.ref("Monitoring");
+  	ref.on('value',fetchData,errorData);
+  }
+  function fetchData(data)
+  {
+  	var Pid=document.getElementById("Pid").value;
+  	var Pdate=document.getElementById("Pdate").value;
+  	var currvalues=data.val();
+  	var keys=Object.keys(currvalues);
+  	reqData.Pidd=Pid;
+  	reqData.Pddate=Pdate;
+  	if(keys.includes(Pid))
+  	{
+  		var regex=new RegExp('/([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/');
+  		if(Pdate.length!=0)
+  		{
+          var reffull=database.ref("Monitoring/"+Pid+"/"+Pdate);
+          reffull.on('value',dispperdata,errorData);
+  		}
+  		else if(Pdate.length==0)
+  		{
+  			var refhalf=database.ref("Monitoring/"+Pid);
+  			reqData.halfref=refhalf;
+  			refhalf.on('value',dispalldata,errorData);
+  		}
+  		else
+  		{
+  			alert("Wrong Date Format");
+  		}
+  	}
+  	else
+  	{
+  		alert("Wrong Priosoner ID");
+  	}
+  }
+  function dispperdata(data)
+  {
+  	createTable(data);
+
+  }
+  function dispalldata(data)
+  {
+  	var currvalues=data.val();
+  	var keys=Object.keys(currvalues);
+  	for(var i=0;i<keys.length;i++)
+  	{
+  		var key=keys[i];
+  		var ref2=database.ref("Monitoring/"+reqData.Pidd+"/"+key);
+  		ref2.on('value',createTable,errorData); 	
+  	}
+
+  	
+  }
+  function createTable(data)
+  {
+  	var body = document.getElementsByTagName("body")[0];
+  		var currvalues=data.val();
+  		var keys=Object.keys(currvalues);
+  		var table=document.createElement("TABLE");
+  		var tablebody=document.createElement("tbody");
+  		for(var i=0;i<keys.length;i++)
+  			{
+  			
+  			var row=document.createElement("tr");
+  			var cellTime=document.createElement("td");
+  			var cellTimeText=document.createTextNode(keys[i]);
+	  		cellTime.appendChild(cellTimeText);
+	  		var cellLocaton=document.createElement("td");
+	  		var k=keys[i];
+	  		var cellLocatonText=document.createTextNode(currvalues[k]);
+	  		cellLocaton.appendChild(cellLocatonText);
+	  		row.appendChild(cellTime);
+	  		row.appendChild(cellLocaton);
+	  		tablebody.appendChild(row);
+  			}
+  	table.appendChild(tablebody);
+  	body.appendChild(table);
+  	table.setAttribute("border","2");
+ 
+  }
+  function errorData()
+  {
+  	alert("Databse Error");
+  }
+</script>
+</body>
+</html>
