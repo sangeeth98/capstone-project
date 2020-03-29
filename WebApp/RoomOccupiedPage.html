@@ -4,7 +4,7 @@
 	<title></title>
 </head>
 <body>
-	Enter name if Prisoner:<input type="text" id="Rid">
+	Enter Room Number of Prisoner:<input type="text" id="Rid">
 	<br><br>
 	(Optional)Enter the date:<input type="text" id="Rdate" placeholder="MM:DD:YYYY">
 	<br><br>
@@ -34,6 +34,8 @@
   var reqData={};
   function MonitoringData()
   { 
+    const elements = document.getElementsByClassName("datatable");
+    while (elements.length > 0) elements[0].remove();
   	var ref=database.ref("Room Occupied");
   	ref.on('value',fetchData,errorData);
   }
@@ -145,7 +147,7 @@
   	body.appendChild(table);
   	table.setAttribute("border","2");
     table.setAttribute("align","center");
- 
+    table.setAttribute("class","datatable");
   }
   function errorData()
   {
