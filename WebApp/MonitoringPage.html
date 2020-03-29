@@ -97,8 +97,14 @@
   		var keys=Object.keys(currvalues);
   		var table=document.createElement("TABLE");
       var x=table.createCaption();
-      x.innerHTML="<b>"+reqData.reKeys[reqData.reCount]+"</b>";
-  		var tablebody=document.createElement("tbody");
+      if(reqData.Pddate=="")
+      {
+        x.innerHTML="<b>"+reqData.reKeys[reqData.reCount]+"</b>";
+      }
+      else
+      {
+       x.innerHTML="<b>"+reqData.Pddate+"</b>"; 
+      }var tablebody=document.createElement("tbody");
   		var header=  document.createElement('thead')
 	    var headingRow = document.createElement('tr')
 	    var headingCell1 = document.createElement('td')
