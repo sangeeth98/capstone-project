@@ -96,6 +96,8 @@
   		var currvalues=data.val();
   		var keys=Object.keys(currvalues);
   		var table=document.createElement("TABLE");
+      var x=table.createCaption();
+      x.innerHTML="<b>"+reqData.reKeys[reqData.reCount]+"</b>";
   		var tablebody=document.createElement("tbody");
   		var header=  document.createElement('thead')
 	    var headingRow = document.createElement('tr')
@@ -129,6 +131,7 @@
   	body.appendChild(table);
   	table.setAttribute("border","2");
   	table.setAttribute("align","center");
+    
   }
   function errorData()
   {
