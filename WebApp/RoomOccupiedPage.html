@@ -78,11 +78,14 @@
   {
   	var currvalues=data.val();
   	var keys=Object.keys(currvalues);
+    reqData.reKeys=keys;
+    reqData.reCount=0;
   	for(var i=0;i<keys.length;i++)
   	{
   		var key=keys[i];
   		var ref2=database.ref("Room Occupied/"+reqData.Ridd+"/"+key);
-  		ref2.on('value',createTable,errorData); 	
+  		ref2.on('value',createTable,errorData); 
+      reqData.reCount=reqData.reCount+1;	
   	}
 
   	
@@ -93,6 +96,8 @@
   		var currvalues=data.val();
   		var keys=Object.keys(currvalues);
   		var table=document.createElement("TABLE");
+      var x=table.createCaption();
+      x.innerHTML="<b>"+reqData.reKeys[reqData.reCount]+"</b>";
   		var tablebody=document.createElement("tbody");
       var header=  document.createElement('thead')
       var headingRow = document.createElement('tr')
