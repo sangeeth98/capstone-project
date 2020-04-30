@@ -218,3 +218,6 @@ lint/tmp/
 
 # ignore pickle files
 *.pickle
+
+# ignore dat files
+*.dat
