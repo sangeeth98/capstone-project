@@ -11,7 +11,6 @@ while(True):
         cv2.rectangle(frame, (d.left(), d.top()), (d.right(), d.bottom()), (0, 255, 0), 2)
     cv2.imshow('Frame', frame)
 
-    key = cv2.waitKey(1) & 0xFF
-    if key==ord('q'): break
+    if cv2.waitKey(1) & 0xFF == 27: break 
 
 cv2.destroyAllWindows()
