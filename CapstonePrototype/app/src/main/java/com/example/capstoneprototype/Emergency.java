@@ -9,7 +9,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
-
 public class Emergency extends AppCompatActivity  {
     Spinner typesp,areasp;
     EditText detailstxt;
@@ -33,11 +32,20 @@ public class Emergency extends AppCompatActivity  {
         sendd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent=new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto","abhishekkishore.2016@vitstudent.ac.in",null));
-                intent.putExtra(Intent.EXTRA_SUBJECT, typesp.getSelectedItem().toString());
-                intent.putExtra(Intent.EXTRA_TEXT, areasp.getSelectedItem().toString()+"\n"+detailstxt.getText().toString());
-                startActivity(intent);
-            }
+                String typeem=typesp.getSelectedItem().toString();
+                String detailsem=areasp.getSelectedItem().toString()+"\n"+detailstxt.getText().toString();
+               // Toast.makeText(Emergency.this, typeem+" "+ detailsem,Toast.LENGTH_SHORT).show();
+                String email="kishoreabhishek28@gmail.com";
+                Uri uri = Uri.parse("mailto:" + email)
+                        .buildUpon()
+                        .appendQueryParameter("subject", typeem)
+                        .appendQueryParameter("body", detailsem)
+                        .build();
+
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, uri);
+                startActivity(emailIntent);
+                }
+
         });
     }
 }

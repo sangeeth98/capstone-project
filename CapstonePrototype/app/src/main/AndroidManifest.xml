@@ -5,6 +5,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launchermine"
@@ -13,18 +15,19 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".Settings"
+        <activity
+            android:name=".Settings"
             android:configChanges="orientation|screenSize"
             android:exported="true"
             android:label="Settings"
             android:noHistory="true"
-            android:parentActivityName=".Navigation"></activity>
+            android:parentActivityName=".Navigation" />
         <activity
             android:name=".ViewProfile"
             android:configChanges="orientation|screenSize"
             android:exported="true"
             android:label="Profile"
-            android:parentActivityName=".Navigation"/>
+            android:parentActivityName=".Navigation" />
         <activity
             android:name=".Emergency"
             android:configChanges="orientation|screenSize"
@@ -64,6 +67,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".MyFirebaseMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
