@@ -1,9 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Capstone Portal</title>
+    <link rel="stylesheet" href="./index.css">
 </head>
 <body>
-	<h1>Success</h1>
+    <div class="panel panel-wide">
+        <h1 style="background: linear-gradient(135deg, var(--accent-teal) 0%, var(--accent-primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            Admin Control Center
+        </h1>
+        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 20px;">
+            Select a module to view monitoring metrics, log status, or manage employees.
+        </p>
+
+        <div class="dashboard-grid">
+            <!-- Card 1: Monitoring -->
+            <div class="card" onclick="location.href='MonitoringPage.html'">
+                <div>
+                    <div class="card-icon">🔍</div>
+                    <div class="card-title">Prisoner Monitoring</div>
+                    <div class="card-desc">Search and trace real-time prisoner location logs by ID and date.</div>
+                </div>
+                <button class="btn btn-secondary" style="padding: 10px 16px; font-size: 0.875rem;">Open Module</button>
+            </div>
+
+            <!-- Card 2: Room Occupancy -->
+            <div class="card" onclick="location.href='RoomOccupiedPage.html'">
+                <div>
+                    <div class="card-icon">🛏️</div>
+                    <div class="card-title">Room Occupancy</div>
+                    <div class="card-desc">Track real-time room occupancy logs and check prisoner room status.</div>
+                </div>
+                <button class="btn btn-secondary" style="padding: 10px 16px; font-size: 0.875rem;">Open Module</button>
+            </div>
+
+            <!-- Card 3: Employee Operations -->
+            <div class="card" onclick="location.href='EmpOperations.html'">
+                <div>
+                    <div class="card-icon">💼</div>
+                    <div class="card-title">Employee Operations</div>
+                    <div class="card-desc">Register new employee IDs or reset status/presence flags.</div>
+                </div>
+                <button class="btn btn-secondary" style="padding: 10px 16px; font-size: 0.875rem;">Open Module</button>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <button class="btn btn-secondary" style="max-width: 150px; margin: 0 auto;" onclick="location.href='loginpract.html'">
+                Logout
+            </button>
+        </div>
+    </div>
 </body>
 </html>

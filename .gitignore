@@ -221,3 +221,6 @@ lint/tmp/
 
 # ignore dat files
 *.dat
+
+# ignore VS Code configurations
+.vscode/

@@ -1,158 +1,188 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Occupancy Logs - Capstone Portal</title>
+    <link rel="stylesheet" href="./index.css">
 </head>
 <body>
-	Enter Room Number of Prisoner:<input type="text" id="Rid">
-	<br><br>
-	(Optional)Enter the date:<input type="text" id="Rdate" placeholder="MM:DD:YYYY">
-	<br><br>
-	<button onclick="MonitoringData()">Search</button>
-	
-<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-app.js"></script>
+    <div class="panel panel-wide">
+        <h1>Room Occupancy Logs</h1>
+        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 30px;">
+            Search real-time occupancy status and logs by Room ID and date.
+        </p>
 
-<!-- TODO: Add SDKs for Firebase products that you want to use
-     https://firebase.google.com/docs/web/setup#available-libraries -->
-<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-database.js"></script>
+        <form id="searchForm" onsubmit="return false;" style="max-width: 500px; margin: 0 auto;">
+            <div class="form-group">
+                <label class="form-label" for="Rid">Room ID</label>
+                <input type="text" id="Rid" class="form-input" placeholder="e.g. Room101" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="Rdate">Date (Optional)</label>
+                <input type="text" id="Rdate" class="form-input" placeholder="MM:DD:YYYY or YYYY-MM-DD">
+            </div>
 
-<script>
-  // Your web app's Firebase configuration
-  var firebaseConfig = {
-    apiKey: "AIzaSyBkNkpSNjI4w_v6Ue0M34KSl8Spp_2KuUw",
-    authDomain: "capstone-prototype-7b1f9.firebaseapp.com",
-    databaseURL: "https://capstone-prototype-7b1f9.firebaseio.com",
-    projectId: "capstone-prototype-7b1f9",
-    storageBucket: "capstone-prototype-7b1f9.appspot.com",
-    messagingSenderId: "84439194622",
-    appId: "1:84439194622:web:78f3659951bd9e6e123eaf",
-    measurementId: "G-70RLHN723Z"
-  };
-  // Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  var database=firebase.database();
-  var reqData={};
-  function MonitoringData()
-  { 
-    const elements = document.getElementsByClassName("datatable");
-    while (elements.length > 0) elements[0].remove();
-  	var ref=database.ref("Room Occupied");
-  	ref.on('value',fetchData,errorData);
-  }
-  function fetchData(data)
-  {
-  	var Rid=document.getElementById("Rid").value;
-  	var Rdate=document.getElementById("Rdate").value;
-  	var currvalues=data.val();
-  	var keys=Object.keys(currvalues);
-  	reqData.Ridd=Rid;
-  	reqData.Rddate=Rdate;
-  	if(keys.includes(Rid))
-  	{
-  		var regex=new RegExp('/([12]\d{3}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]))/');
-  		if(Rdate.length!=0)
-  		{
-          var reffull=database.ref("Room Occupied/"+Rid+"/"+Rdate);
-          reffull.on('value',dispperdata,errorData);
-  		}
-  		else if(Rdate.length==0)
-  		{
-  			var refhalf=database.ref("Room Occupied/"+Rid);
-  			reqData.halfref=refhalf;
-  			refhalf.on('value',dispalldata,errorData);
-  		}
-  		else
-  		{
-  			alert("Wrong Date Format");
-  		}
-  	}
-  	else
-  	{
-  		alert("Wrong Priosoner ID");
-  	}
-  }
-  function dispperdata(data)
-  {
-  	createTable(data);
+            <button type="submit" id="searchBtn" class="btn">
+                <span>Search Occupancy Logs</span>
+            </button>
+        </form>
 
-  }
-  function dispalldata(data)
-  {
-  	var currvalues=data.val();
-  	var keys=Object.keys(currvalues);
-    reqData.reKeys=keys;
-    reqData.reCount=0;
-  	for(var i=0;i<keys.length;i++)
-  	{
-  		var key=keys[i];
-  		var ref2=database.ref("Room Occupied/"+reqData.Ridd+"/"+key);
-  		ref2.on('value',createTable,errorData); 
-      reqData.reCount=reqData.reCount+1;	
-  	}
+        <!-- Dynamic Results Container -->
+        <div id="resultsArea" style="margin-top: 30px;"></div>
 
-  	
-  }
-  function createTable(data)
-  {
-  	var body = document.getElementsByTagName("body")[0];
-  		var currvalues=data.val();
-  		var keys=Object.keys(currvalues);
-  		var table=document.createElement("TABLE");
-      var x=table.createCaption();
-      if(reqData.Rddate=="")
-      {
-        x.innerHTML="<b>"+reqData.reKeys[reqData.reCount]+"</b>";
-      }
-      else
-      {
-       x.innerHTML="<b>"+reqData.Rddate+"</b>"; 
-      }
-  		var tablebody=document.createElement("tbody");
-      var header=  document.createElement('thead')
-      var headingRow = document.createElement('tr')
-      var headingCell1 = document.createElement('td')
-      var headingText1 = document.createTextNode('Time')
-      headingCell1.appendChild(headingText1)
-      headingRow.appendChild(headingCell1)
-      var headingCell2 = document.createElement('td')
-      var headingText2 = document.createTextNode('Location')
-      headingCell2.appendChild(headingText2)
-      headingRow.appendChild(headingCell2)
-      header.appendChild(headingRow)
-      table.appendChild(header)
-      
-  		for(var i=0;i<keys.length;i++)
-  			{
-          if(keys[i]=="Occupied" || keys[i]=="Unoccupied")
-          {
-            continue;
-          }
-          else
-          {
-            var row=document.createElement("tr");
-            var cellTime=document.createElement("td");
-            var cellTimeText=document.createTextNode(keys[i]);
-            cellTime.appendChild(cellTimeText);
-            var cellLocaton=document.createElement("td");
-            var k=keys[i];
-            var cellLocatonText=document.createTextNode(currvalues[k]);
-            cellLocaton.appendChild(cellLocatonText);
-            row.appendChild(cellTime);
-            row.appendChild(cellLocaton);
-            tablebody.appendChild(row);
-          }
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="connectiontofirebase.html" class="nav-link">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Firebase v10 Modular Integration -->
+    <script type="module">
+        import { db } from "./firebase-config.js";
+        import { ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { showToast } from "./utils.js";
+
+        document.getElementById("searchBtn").addEventListener("click", searchOccupiedData);
+
+        async function searchOccupiedData() {
+            const resultsArea = document.getElementById("resultsArea");
+            resultsArea.innerHTML = ""; // Clear existing tables
+
+            const rid = document.getElementById("Rid").value.trim();
+            const rdate = document.getElementById("Rdate").value.trim();
+
+            if (!rid) {
+                showToast("Please enter a Room ID.", "error");
+                return;
+            }
+
+            const searchBtn = document.getElementById("searchBtn");
+            const originalText = searchBtn.innerHTML;
+            searchBtn.disabled = true;
+            searchBtn.innerHTML = `<span class="spinner"></span> <span>Searching...</span>`;
+
+            try {
+                // Fetch Room Occupied path
+                const occupiedRef = ref(db, `Room Occupied`);
+                const snapshot = await get(occupiedRef);
+
+                if (!snapshot.exists()) {
+                    showToast("No occupancy database found.", "error");
+                    return;
+                }
+
+                const occupiedData = snapshot.val();
+                if (!occupiedData.hasOwnProperty(rid)) {
+                    showToast("Wrong Room ID.", "error");
+                    return;
+                }
+
+                // If specific date is entered
+                if (rdate.length > 0) {
+                    const specificDayRef = ref(db, `Room Occupied/${rid}/${rdate}`);
+                    const dateSnapshot = await get(specificDayRef);
+
+                    if (!dateSnapshot.exists()) {
+                        showToast("No logs found for this date.", "info");
+                        return;
+                    }
+
+                    createTable(rdate, dateSnapshot.val());
+                } else {
+                    // Fetch all logs for this Room
+                    const allDataRef = ref(db, `Room Occupied/${rid}`);
+                    const allSnapshot = await get(allDataRef);
+                    const currValues = allSnapshot.val();
+
+                    if (!currValues) {
+                        showToast("No occupancy logs found.", "info");
+                        return;
+                    }
+
+                    const keys = Object.keys(currValues);
+                    for (let i = 0; i < keys.length; i++) {
+                        const key = keys[i];
+                        const val = currValues[key];
+                        // Skip flag attributes like 'Occupied' or 'Unoccupied'
+                        if (key === "Occupied" || key === "Unoccupied") {
+                            continue;
+                        }
+                        
+                        if (typeof val === 'object' && val !== null) {
+                            createTable(key, val);
+                        } else {
+                            createTable("General Logs", { [key]: val });
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Database fetch error: ", error);
+                showToast("Database Error.", "error");
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.innerHTML = originalText;
+            }
         }
-  			
-  	table.appendChild(tablebody);
-  	body.appendChild(table);
-  	table.setAttribute("border","2");
-    table.setAttribute("align","center");
-    table.setAttribute("class","datatable");
-  }
-  function errorData()
-  {
-  	alert("Databse Error");
-  }
-</script>
+
+        function createTable(title, dataVal) {
+            const resultsArea = document.getElementById("resultsArea");
+
+            const tableContainer = document.createElement("div");
+            tableContainer.className = "table-container";
+            tableContainer.style.marginBottom = "24px";
+
+            const table = document.createElement("table");
+            table.className = "datatable";
+
+            const caption = table.createCaption();
+            caption.innerHTML = `<b>Date: ${title}</b>`;
+
+            // Table Header
+            const thead = document.createElement("thead");
+            const headingRow = document.createElement("tr");
+            
+            const th1 = document.createElement("th");
+            th1.textContent = "Time";
+            headingRow.appendChild(th1);
+
+            const th2 = document.createElement("th");
+            th2.textContent = "Location / Status";
+            headingRow.appendChild(th2);
+
+            thead.appendChild(headingRow);
+            table.appendChild(thead);
+
+            // Table Body
+            const tbody = document.createElement("tbody");
+            const keys = Object.keys(dataVal);
+
+            for (let i = 0; i < keys.length; i++) {
+                const timeKey = keys[i];
+                const locVal = dataVal[timeKey];
+
+                // Skip layout keys if they slip inside child nodes
+                if (timeKey === "Occupied" || timeKey === "Unoccupied") {
+                    continue;
+                }
+
+                const row = document.createElement("tr");
+
+                const tdTime = document.createElement("td");
+                tdTime.textContent = timeKey;
+                row.appendChild(tdTime);
+
+                const tdLoc = document.createElement("td");
+                tdLoc.textContent = locVal;
+                row.appendChild(tdLoc);
+
+                tbody.appendChild(row);
+            }
+
+            table.appendChild(tbody);
+            tableContainer.appendChild(table);
+            resultsArea.appendChild(tableContainer);
+        }
+    </script>
 </body>
 </html>

@@ -1,53 +1,58 @@
-// Your web app's Firebase configuration
-var firebaseConfig = {
-    apiKey: "AIzaSyBkNkpSNjI4w_v6Ue0M34KSl8Spp_2KuUw",
-    authDomain: "capstone-prototype-7b1f9.firebaseapp.com",
-    databaseURL: "https://capstone-prototype-7b1f9.firebaseio.com",
-    projectId: "capstone-prototype-7b1f9",
-    storageBucket: "capstone-prototype-7b1f9.appspot.com",
-    messagingSenderId: "84439194622",
-    appId: "1:84439194622:web:78f3659951bd9e6e123eaf",
-    measurementId: "G-70RLHN723Z"
-};
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-var database = firebase.database();
+import { db } from "./firebase-config.js";
+import { ref, set, remove, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { showToast } from "./utils.js";
 
-function ResetStatus() {
-    var empid = document.getElementById("empfield").value;
-    var ref = database.ref("Empids/" + empid);
-    ref.set(0);
-    var refdel = database.ref("Staffs/" + empid);
-    refdel.remove();
+// Hook event listeners
+document.getElementById("addBtn").addEventListener("click", addEmpId);
+document.getElementById("resetBtn").addEventListener("click", resetStatus);
+
+async function resetStatus() {
+    const empId = document.getElementById("empfield").value.trim();
+    if (!empId) {
+        showToast("Please enter an Employee ID.", "error");
+        return;
+    }
+
+    try {
+        const empIdRef = ref(db, `Empids/${empId}`);
+        await set(empIdRef, 0);
+
+        const staffRef = ref(db, `Staffs/${empId}`);
+        await remove(staffRef);
+
+        showToast(`Employee ID '${empId}' status reset successfully.`, "success");
+    } catch (error) {
+        console.error("Reset status error: ", error);
+        showToast("Error resetting employee status.", "error");
+    }
 }
 
-function AddEmpid() {
-    var ref = database.ref("Empids");
-    ref.once("value", addtodb, errordb);
-}
+async function addEmpId() {
+    const empId = document.getElementById("empfield").value.trim();
+    if (!empId) {
+        showToast("Please enter an Employee ID.", "error");
+        return;
+    }
 
-function addtodb(data) {
-    var empid = document.getElementById("empfield").value;
-    var ref = database.ref("Empids");
-    var currids = data.val();
-    var keys = Object.keys(currids);
-    var count = 0;
-    for (var i = 0; i < keys.length; i++) {
-        if (empid != keys[i]) {
-            count += 1;
-            console.log(count);
+    try {
+        const empIdsRef = ref(db, "Empids");
+        const snapshot = await get(empIdsRef);
+        
+        let currIds = {};
+        if (snapshot.exists()) {
+            currIds = snapshot.val();
         }
-    }
-    if (count == keys.length) {
-        var data = {
-            [empid]: 0
-        };
-        ref.update(data);
-    } else {
-        alert("Employee ID already Exists");
-    }
-}
 
-function errordb() {
-    alert("Error connecting to database");
+        // Optimize checking existence: O(1) key check instead of looping
+        if (currIds && Object.prototype.hasOwnProperty.call(currIds, empId)) {
+            showToast("Employee ID already exists.", "error");
+        } else {
+            const updates = { [empId]: 0 };
+            await update(empIdsRef, updates);
+            showToast(`Employee ID '${empId}' added successfully.`, "success");
+        }
+    } catch (error) {
+        console.error("Add employee ID error: ", error);
+        showToast("Database connection error.", "error");
+    }
 }

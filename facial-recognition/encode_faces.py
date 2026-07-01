@@ -1,65 +1,108 @@
-# USAGE
-# When encoding on laptop, desktop, or GPU (slower, more accurate):
-# python encode_faces.py --dataset dataset --encodings encodings.pickle --detection-method cnn
-# When encoding on Raspberry Pi (faster, more accurate):
-# python encode_faces.py --dataset dataset --encodings encodings.pickle --detection-method hog
+#!/usr/bin/env -S uv run
+# /// script
+# requires-python = ">=3.9"
+# dependencies = [
+#   "opencv-python>=4.9.0",
+#   "face-recognition>=1.3.0",
+#   "imutils>=0.5.4",
+#   "setuptools<70",
+# ]
+# ///
+"""
+encode_faces.py
 
-# import the necessary packages
-from imutils import paths
-import face_recognition
+Quantifies faces in a dataset directory and serializes facial encodings to a pickle file.
+
+Usage:
+    uv run encode_faces.py --dataset dataset --encodings encodings.pickle --detection-method hog
+"""
+
 import argparse
+import logging
+import os
 import pickle
 import cv2
-import os
+import face_recognition
+from imutils import paths
 
-# construct the argument parser and parse the arguments
-ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--dataset", required=True,
-	help="path to input directory of faces + images")
-ap.add_argument("-e", "--encodings", required=True,
-	help="path to serialized db of facial encodings")
-ap.add_argument("-d", "--detection-method", type=str, default="cnn",
-	help="face detection model to use: either `hog` or `cnn`")
-args = vars(ap.parse_args())
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[logging.StreamHandler()]
+)
+logger = logging.getLogger(__name__)
 
-# grab the paths to the input images in our dataset
-print("[INFO] quantifying faces...")
-imagePaths = list(paths.list_images(args["dataset"]))
+def parse_arguments():
+    """Parses command line arguments."""
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "-i", "--dataset",
+        required=True,
+        help="path to input directory of faces + images"
+    )
+    ap.add_argument(
+        "-e", "--encodings",
+        required=True,
+        help="path to serialized db of facial encodings"
+    )
+    ap.add_argument(
+        "-d", "--detection-method",
+        type=str,
+        default="cnn",
+        choices=["hog", "cnn"],
+        help="face detection model to use: either 'hog' or 'cnn'"
+    )
+    return vars(ap.parse_args())
 
-# initialize the list of known encodings and known names
-knownEncodings = []
-knownNames = []
+def main():
+    args = parse_arguments()
 
-# loop over the image paths
-for (i, imagePath) in enumerate(imagePaths):
-	# extract the person name from the image path
-	print("[INFO] processing image {}/{}".format(i + 1,
-		len(imagePaths)))
-	name = imagePath.split(os.path.sep)[-2]
+    # Grab path to input images
+    logger.info("Quantifying faces and gathering image paths...")
+    image_paths = list(paths.list_images(args["dataset"]))
+    if not image_paths:
+        logger.warning(f"No images found in the dataset directory: {args['dataset']}")
+        return
 
-	# load the input image and convert it from RGB (OpenCV ordering)
-	# to dlib ordering (RGB)
-	image = cv2.imread(imagePath)
-	rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    known_encodings = []
+    known_names = []
 
-	# detect the (x, y)-coordinates of the bounding boxes
-	# corresponding to each face in the input image
-	boxes = face_recognition.face_locations(rgb,
-		model=args["detection_method"])
+    # Loop over all image paths
+    for i, image_path in enumerate(image_paths):
+        logger.info(f"Processing image {i + 1}/{len(image_paths)}: {image_path}")
+        
+        # Folder name represents the person's name
+        name = image_path.split(os.path.sep)[-2]
 
-	# compute the facial embedding for the face
-	encodings = face_recognition.face_encodings(rgb, boxes)
+        # Load image and convert color space from BGR (OpenCV) to dlib RGB format
+        image = cv2.imread(image_path)
+        if image is None:
+            logger.warning(f"Failed to read image: {image_path}. Skipping.")
+            continue
+            
+        rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-	# loop over the encodings
-	for encoding in encodings:
-		# add each encoding + name to our set of known names and
-		# encodings
-		knownEncodings.append(encoding)
-		knownNames.append(name)
+        # Detect the coordinates of bounding boxes corresponding to each face
+        boxes = face_recognition.face_locations(rgb, model=args["detection_method"])
 
-# dump the facial encodings + names to disk
-print("[INFO] serializing encodings...")
-data = {"encodings": knownEncodings, "names": knownNames}
-f = open(args["encodings"], "wb")
-f.write(pickle.dumps(data))
-f.close()
+        # Compute the facial embeddings
+        encodings = face_recognition.face_encodings(rgb, boxes)
+
+        # Add encodings and name to our catalog
+        for encoding in encodings:
+            known_encodings.append(encoding)
+            known_names.append(name)
+
+    # Serialize encodings to disk
+    logger.info(f"Writing {len(known_encodings)} facial encodings to '{args['encodings']}'...")
+    try:
+        data = {"encodings": known_encodings, "names": known_names}
+        with open(args["encodings"], "wb") as f:
+            f.write(pickle.dumps(data))
+        logger.info("Serialization completed successfully.")
+    except Exception as e:
+        logger.error(f"Error during serialization: {e}")
+
+if __name__ == "__main__":
+    main()

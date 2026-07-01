@@ -1,23 +1,36 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-	<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-app.js"></script>
-	<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-database.js"></script>
-	<script src="./loginpract.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Capstone Portal</title>
+    <link rel="stylesheet" href="./index.css">
 </head>
-
 <body>
-	Enter name:<input type="text" id="login" />
-	<br />
-	<br />
-	Enter Password:<input type="Password" id="Password" />
-	<br />
-	<br />
-	<button type="Submit" onclick="validate()"></button>
+    <div class="panel">
+        <h1>Portal Login</h1>
+        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 30px;">
+            Secure access to Capstone administration.
+        </p>
 
-	<!-- TODO: Add SDKs for Firebase products that you want to use
-    https://firebase.google.com/docs/web/setup#available-libraries -->
+        <form id="loginForm" onsubmit="return false;">
+            <div class="form-group">
+                <label class="form-label" for="login">Employee ID</label>
+                <input type="text" id="login" class="form-input" placeholder="e.g. EMP123" required autocomplete="username">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="Password">Password</label>
+                <input type="password" id="Password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn">
+                <span>Login Securely</span>
+            </button>
+        </form>
+    </div>
+
+    <!-- Load main script as ES6 module -->
+    <script type="module" src="./loginpract.js"></script>
 </body>
-
 </html>

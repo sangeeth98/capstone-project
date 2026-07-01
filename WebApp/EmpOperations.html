@@ -1,21 +1,40 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-	<title> </title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Operations - Capstone Portal</title>
+    <link rel="stylesheet" href="./index.css">
 </head>
-
 <body>
-	Enter Empid:<input type="text" id="empfield" />
-	<button type="Submit" onclick="ResetStatus()">ResetStatus</button>
-	<button type="Submit" onclick="AddEmpid()">AddEmpid</button>
-	<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-app.js"></script>
+    <div class="panel">
+        <h1>Employee Operations</h1>
+        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 30px;">
+            Add new employee records or reset presence/status logs.
+        </p>
 
-	<!-- TODO: Add SDKs for Firebase products that you want to use
-    https://firebase.google.com/docs/web/setup#available-libraries -->
-	<script src="https://www.gstatic.com/firebasejs/7.10.0/firebase-database.js"></script>
+        <form id="empForm" onsubmit="return false;">
+            <div class="form-group">
+                <label class="form-label" for="empfield">Employee ID</label>
+                <input type="text" id="empfield" class="form-input" placeholder="e.g. EMP456" required autocomplete="off">
+            </div>
 
-	<script src="./EmpOperations.js"></script>
+            <div style="display: flex; gap: 16px; margin-top: 24px;">
+                <button type="button" id="addBtn" class="btn">
+                    <span>Add ID</span>
+                </button>
+                <button type="button" id="resetBtn" class="btn btn-secondary">
+                    <span>Reset Status</span>
+                </button>
+            </div>
+        </form>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="connectiontofirebase.html" class="nav-link">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Load main script as ES6 module -->
+    <script type="module" src="./EmpOperations.js"></script>
 </body>
-
 </html>

@@ -1,69 +1,88 @@
-// Your web app's Firebase configuration
-var firebaseConfig = {
-	apiKey: "AIzaSyBkNkpSNjI4w_v6Ue0M34KSl8Spp_2KuUw",
-	authDomain: "capstone-prototype-7b1f9.firebaseapp.com",
-	databaseURL: "https://capstone-prototype-7b1f9.firebaseio.com",
-	projectId: "capstone-prototype-7b1f9",
-	storageBucket: "capstone-prototype-7b1f9.appspot.com",
-	messagingSenderId: "84439194622",
-	appId: "1:84439194622:web:78f3659951bd9e6e123eaf",
-	measurementId: "G-70RLHN723Z"
-};
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-var database = firebase.database();
-var ref = database.ref("Admins");
-var test;
+import { db } from "./firebase-config.js";
+import { ref, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { showToast } from "./utils.js";
 
-function validate() {
-	ref.on("value", goData, errData);
-}
+document.getElementById("loginForm").addEventListener("submit", validate);
 
-function goData(data) {
-	var login = document.getElementById("login").value;
-	var pass = document.getElementById("Password").value;
-	var staffs = data.val();
-	var keys = Object.keys(staffs);
-	console.log(keys);
-	var check = true;
-	for (var i = 0; i < keys.length; i++) {
-		var k = keys[i];
-		var Empid = staffs[k].Empid;
-		if (Empid == login) {
-			check = false;
-			var Password = staffs[k].Password;
-			if (Password == pass) {
-				var today = new Date();
-				var date =
-					today.getFullYear() +
-					"-" +
-					(today.getMonth() + 1) +
-					"-" +
-					today.getDate();
-				var time =
-					today.getHours() +
-					":" +
-					today.getMinutes() +
-					":" +
-					today.getSeconds();
-				console.log(date + " " + time);
-				var ref2 = database.ref("Login Activity/" + date);
-				var data = {
-					[time]: login
-				};
-				ref2.update(data);
-				window.open("connectiontofirebase.html", "_self");
-			} else {
-				alert("Wrong Password");
-			}
-		}
-		console.log(Password + "\n" + Empid);
-	}
-	if (check) {
-		alert("Wrong Empid");
-	}
-}
+async function validate() {
+    const submitBtn = document.getElementById("submitBtn");
+    const loginInput = document.getElementById("login").value.trim();
+    const passInput = document.getElementById("Password").value;
 
-function errData() {
-	alert("Error");
+    if (!loginInput || !passInput) {
+        showToast("Please enter both ID and Password.", "error");
+        return;
+    }
+
+    // Disable button & show spinner state
+    submitBtn.disabled = true;
+    const originalContent = submitBtn.innerHTML;
+    submitBtn.innerHTML = `<span class="spinner"></span> <span>Verifying...</span>`;
+
+    try {
+        const adminRef = ref(db, "Admins");
+        const snapshot = await get(adminRef);
+
+        if (!snapshot.exists()) {
+            showToast("No admin configurations found in database.", "error");
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
+            return;
+        }
+
+        const staffs = snapshot.val();
+        const keys = Object.keys(staffs);
+        let found = false;
+
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            const empId = staffs[key].Empid;
+
+            if (empId == loginInput) {
+                found = true;
+                const correctPassword = staffs[key].Password;
+
+                if (correctPassword == passInput) {
+                    showToast("Access Granted. Redirecting...", "success");
+
+                    // Create structured date & time strings
+                    const today = new Date();
+                    const month = String(today.getMonth() + 1).padStart(2, '0');
+                    const day = String(today.getDate()).padStart(2, '0');
+                    const dateStr = `${today.getFullYear()}-${month}-${day}`;
+
+                    const hours = String(today.getHours()).padStart(2, '0');
+                    const minutes = String(today.getMinutes()).padStart(2, '0');
+                    const seconds = String(today.getSeconds()).padStart(2, '0');
+                    const timeStr = `${hours}:${minutes}:${seconds}`;
+
+                    // Update Login Activity in Firebase
+                    const logRef = ref(db, `Login Activity/${dateStr}`);
+                    await update(logRef, {
+                        [timeStr]: loginInput
+                    });
+
+                    // Redirect to Control Panel
+                    setTimeout(() => {
+                        window.open("connectiontofirebase.html", "_self");
+                    }, 1000);
+                    return;
+                } else {
+                    showToast("Wrong Password. Access Denied.", "error");
+                    break;
+                }
+            }
+        }
+
+        if (!found) {
+            showToast("Employee ID not found.", "error");
+        }
+
+    } catch (error) {
+        console.error("Login verification failed: ", error);
+        showToast("Database connection error. Try again.", "error");
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalContent;
+    }
 }
