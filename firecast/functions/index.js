@@ -1,50 +1,74 @@
 /**
- * Cloud Functions for Firebase trigger to check Emergency flags
- * and send push notifications to registered devices.
+ * SentinelAI — Firebase Cloud Functions
+ *
+ * Listens for emergency events written to the Realtime Database
+ * and dispatches push notifications to registered devices via FCM.
+ *
+ * Environment Variables:
+ *   FCM_DEVICE_TOKEN — The target device registration token for notifications.
+ *                      Set via: firebase functions:config:set app.fcm_token="<token>"
+ *                      Or set as a runtime environment variable in the Firebase Console.
  */
 
-const functions = require('firebase-functions');
-const admin = require('firebase-admin');
+const { onValueUpdated } = require("firebase-functions/v2/database");
+const { logger } = require("firebase-functions");
+const { initializeApp } = require("firebase-admin/app");
+const { getMessaging } = require("firebase-admin/messaging");
 
-admin.initializeApp();
+initializeApp();
 
-exports.checkflag = functions.database.ref('Emergencies')
-    .onUpdate((snapshot, context) => {
-        // Retrieve the current device registration token from configuration or fallback
-        // WARNING: Hardcoding device tokens in source control is not recommended for production.
-        // It is better to store tokens dynamically in the database or retrieve them via config.
-        const defaultDeviceToken = 'enpOsuehqFg:APA91bGN8xytVoPaTTLEpguap7mJnPP1TwSMCDXfr6rNy6h1cQvX7cnCCuHPaHOYijBIhik5k31NgrClo0_iEISYVe2f4MWXmMiOeHGvxJ_4z4a1GbkWS1ewNx9iwsyWPTxmAZsu2Wd5';
-        const targetToken = process.env.FCM_DEVICE_TOKEN || defaultDeviceToken;
+/**
+ * Trigger: Fires whenever the /Emergencies path is updated in Realtime Database.
+ *
+ * Reads the latest emergency entry and sends a push notification
+ * to the configured device token.
+ */
+exports.checkflag = onValueUpdated(
+  {
+    ref: "/Emergencies",
+    region: "us-central1",
+  },
+  async (event) => {
+    // Retrieve device token from environment or Functions config
+    const targetToken = process.env.FCM_DEVICE_TOKEN;
 
-        const emergencies = snapshot.after.val();
-        if (!emergencies) {
-            console.log("No emergencies data found.");
-            return null;
-        }
+    if (!targetToken) {
+      logger.error(
+        "FCM_DEVICE_TOKEN is not configured. " +
+        "Set it via: firebase functions:config:set app.fcm_token=\"<token>\" " +
+        "or as a runtime environment variable."
+      );
+      return null;
+    }
 
-        const keys = Object.keys(emergencies);
-        const lastKey = keys[keys.length - 1];
-        const lastEmergency = emergencies[lastKey];
+    const emergencies = event.data.after.val();
+    if (!emergencies) {
+      logger.info("No emergencies data found in the updated snapshot.");
+      return null;
+    }
 
-        const statusMessage = `Emergency of: ${lastEmergency}`;
+    // Get the most recent emergency entry
+    const keys = Object.keys(emergencies);
+    const lastKey = keys[keys.length - 1];
+    const lastEmergency = emergencies[lastKey];
 
-        const message = {
-            notification: {
-                title: 'Emergency Alert',
-                body: statusMessage
-            },
-            token: targetToken
-        };
+    logger.info(`Processing emergency: key=${lastKey}, value=${lastEmergency}`);
 
-        // CRITICAL: Return the promise chain so the function execution environment remains
-        // active until the asynchronous notification operation finishes.
-        return admin.messaging().send(message)
-            .then((response) => {
-                console.log("Notification message sent successfully:", response);
-                return response;
-            })
-            .catch((error) => {
-                console.error("Error sending notification message:", error);
-                throw error;
-            });
-    });
+    const message = {
+      notification: {
+        title: "🚨 SentinelAI Emergency Alert",
+        body: `Emergency reported: ${lastEmergency}`,
+      },
+      token: targetToken,
+    };
+
+    try {
+      const response = await getMessaging().send(message);
+      logger.info("Push notification sent successfully:", response);
+      return response;
+    } catch (error) {
+      logger.error("Failed to send push notification:", error);
+      throw error;
+    }
+  }
+);

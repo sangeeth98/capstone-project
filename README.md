@@ -1,92 +1,168 @@
-# Capstone Smart Security System
+<div align="center">
 
-A modern, multi-technology college capstone project integrating **Computer Vision**, a **Web Portal**, an **Android Client**, and **Firebase Cloud Functions** into a cohesive prisoner monitoring and alert system.
+![SentinelAI Banner](./docs/assets/banner.png)
+
+# SentinelAI — Smart AI Surveillance & Monitoring Platform
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
+[![Node.js 18](https://img.shields.io/badge/Node.js-18%20LTS-green.svg)](https://nodejs.org/)
+[![Firebase SDK v10](https://img.shields.io/badge/Firebase-SDK%20v10-orange.svg)](https://firebase.google.com/)
+[![Android API 34](https://img.shields.io/badge/Android-SDK%2034-green.svg)](https://developer.android.com/)
+[![uv Managed](https://img.shields.io/badge/uv-Package%20Manager-purple.svg)](https://docs.astral.sh/uv/)
+
+**SentinelAI** is an end-to-end, multi-technology AI surveillance and facility monitoring platform originally developed as a college capstone project at **Vellore Institute of Technology (VIT)**. It integrates real-time computer vision, background motion analysis, a glassmorphic admin command center, serverless database triggers, and mobile emergency notifications into a unified security architecture.
+
+[System Architecture](#-system-architecture) •
+[Key Modules](#-key-modules) •
+[Quick Start](#-quick-start) •
+[Documentation](#-academic--project-documentation) •
+[License](#-license)
+
+</div>
 
 ---
 
-## 🛠️ Project Architecture
+## 🛠️ System Architecture
 
 ```mermaid
 graph TD
-    A[Webcam / Video Stream] -->|Frame Input| B[Python Face Recognition]
-    B -->|Logs Detections| C[(Firebase Realtime DB)]
-    C -->|Trigger Events| D[Firebase Cloud Functions]
-    D -->|Push Notification| E[Android Mobile Application]
-    F[Admin Web Portal] -->|Read Logs & Configs| C
+    subgraph Edge Vision Layer
+        A[📹 Video Stream / Webcam] --> B[🐍 Python Facial Recognition]
+        A --> C[🐍 Python Motion Detection]
+    end
+
+    subgraph Firebase Cloud Data Backbone
+        B -->|Patch Detection Logs| D[(🔥 Firebase Realtime Database)]
+        C -->|Patch Room Occupancy| D
+    end
+
+    subgraph Admin & Alert Dispatch
+        D -->|Database Triggers| E[⚡ Cloud Functions v2]
+        E -->|FCM Push Notifications| F[📱 Android Mobile Client]
+        G[💻 Glassmorphic Admin Web Portal] <-->|Realtime Queries| D
+    end
 ```
 
-1. **Python Facial Recognition (`facial-recognition/`)**: Monitors camera streams, detects faces via OpenCV, calculates embeddings via `face_recognition`, and updates detection timestamps in the Firebase Realtime Database.
-2. **Admin Web Portal (`WebApp/`)**: A modern, glassmorphic dark-theme portal for system administrators to manage employee ID registrations, inspect prisoner location logs, and track room occupancy status.
-3. **Android Client (`CapstonePrototype/` & `Application/`)**: Receives push notifications from Firebase and displays emergency flags.
-4. **Firebase Functions (`firecast/`)**: Serverless function that triggers when an emergency is logged and alerts the Android client via FCM.
+---
+
+## ✨ Key Modules & Capabilities
+
+### 1. 🔍 Facial Recognition System (`facial-recognition/`)
+* **Dual Detection Engines**: Supports fast HOG (Histogram of Oriented Gradients) for edge devices like Raspberry Pi and deep learning CNN for high-accuracy desktop processing.
+* **Embedding Quantification**: Pre-computes 128-d facial embeddings using dlib and OpenCV, serializing encodings for zero-latency runtime comparison.
+* **Dual Firebase Sync**: Uses `firebase-admin` SDK with an automatic fallback to the Firebase Realtime Database REST API.
+* **Managed via `uv`**: Fully configured with `pyproject.toml` and PEP 723 inline dependency metadata for zero-setup execution.
+
+### 2. 🏠 Room Occupancy & Motion Detector (`facial-recognition/motion_detector.py`)
+* **Background Subtraction**: Analyzes frame deltas using Gaussian blurring and thresholding to detect movement.
+* **Occupancy Logging**: Tracks room status transitions (`Occupied` / `Unoccupied`) and increments interval counters in Firebase.
+
+### 3. 💻 Admin Command Center (`WebApp/`)
+* **Glassmorphism Design System**: Built with modern CSS custom properties, backdrop blur, Inter typography, and subtle micro-animations.
+* **Live Stats & Activity Feed**: Queries Firebase Realtime DB asynchronously for live room counts, employee registrations, and login activity logs.
+* **Data Export Engine**: Export tracking tables and room logs directly to CSV format.
+* **Interactive Modules**: Includes Prisoner Monitoring search, Room Occupancy heatmap views, and Employee Access Operations.
+
+### 4. ⚡ Serverless Cloud Functions (`firecast/functions/`)
+* **Node.js 18 & Functions v2**: Built on Firebase Functions `onValueUpdated` triggers.
+* **Emergency Dispatch**: Monitors emergency database flags and fires FCM push alerts to registered security devices.
+
+### 5. 📱 Android Emergency Alert Client (`CapstonePrototype/`)
+* **Modernized to API 34**: Built with Kotlin, AGP 8.3.2, and current Firebase AndroidX SDKs.
+* **Push Notifications**: Receives FCM payload alerts when emergency security thresholds are breached.
 
 ---
 
-## 📁 Repository Structure
+## 🚀 Quick Start
 
-*   `WebApp/`: Source HTML, CSS and JS for the web portal.
-*   `facial-recognition/`: Python scripts, cascades, and local dataset for face processing.
-*   `CapstonePrototype/` / `Application/`: Source directories for the Android applications.
-*   `firecast/`: Configurations and code for deploying Firebase Database Rules and Cloud Functions.
-*   `Experimental-Codes/`: Archive folders for previous algorithm prototypes and scripts.
+### 1. Web Application Command Center
 
----
+```bash
+# Serve static files locally with any HTTP server
+npx serve WebApp
 
-## 🚀 Getting Started
+# Or navigate directly:
+# Open WebApp/login.html in your browser
+```
 
-### 1. Web Portal Setup
-
-The web portal is built using **HTML5**, **Vanilla CSS**, and **ES6 JavaScript Modules**, calling the Firebase Web SDK v10 directly from a CDN.
-
-1.  Open the [firebase-config.js](file:///c:/projects/capstone-project/WebApp/firebase-config.js) file.
-2.  Replace the `firebaseConfig` object placeholder credentials with your specific Firebase project credentials.
-3.  Launch [loginpract.html](file:///c:/projects/capstone-project/WebApp/loginpract.html) directly in a web browser, or serve it using any simple static HTTP server (e.g. `npx serve WebApp` or Python's `python -m http.server`).
+1. Open [firebase-config.js](./WebApp/firebase-config.js) and replace placeholders with your Firebase credentials.
+2. Open [login.html](./WebApp/login.html) to access the portal.
 
 ---
 
-### 2. Python Facial Recognition Setup
+### 2. Python Computer Vision Engine
 
-Dependencies and environments are managed using `uv`. See **[docs/running-scripts.md](./docs/running-scripts.md)** for full details.
+Ensure [`uv`](https://docs.astral.sh/uv/) is installed.
 
-#### Quick Start — Project Environment
 ```bash
 cd facial-recognition
-uv sync                       # creates .venv and installs everything from pyproject.toml
+
+# 1. Install dependencies into managed venv
+uv sync
+
+# 2. Encode face dataset
 uv run encode_faces.py --dataset dataset --encodings encodings.pickle --detection-method hog
+
+# 3. Launch real-time face recognition
 uv run pi_face_recognition.py --cascade haarcascade_frontalface_default.xml --encodings encodings.pickle
+
+# 4. Launch motion-based room occupancy detector
+uv run motion_detector.py --room R0101
 ```
 
-#### Quick Start — Inline Script (no setup)
-Each script embeds its own dependency list ([PEP 723](https://peps.python.org/pep-0723/)). `uv` auto-installs everything on first run:
+> **Zero Setup Mode (PEP 723)**: You can also run any script standalone without running `uv sync` first — `uv run motion_detector.py` will auto-install dependencies into an isolated cache.
+
+---
+
+### 3. Firebase Cloud Functions
+
 ```bash
-uv run facial-recognition/pi_face_recognition.py --cascade haarcascade_frontalface_default.xml --encodings encodings.pickle
+cd firecast/functions
+
+# Install dependencies
+npm install
+
+# Deploy functions to Firebase
+firebase deploy --only functions
 ```
 
-#### Configure Credentials
-1. Copy [.env.example](./facial-recognition/.env.example) → `.env`
-2. Set `FIREBASE_DATABASE_URL` to your Realtime Database URL
-3. (Optional) Set `GOOGLE_APPLICATION_CREDENTIALS` to a service account JSON path
+---
+
+## 📚 Academic & Project Documentation
+
+All original capstone thesis documents, research paper, review presentations, and architectural flowcharts have been migrated from Google Drive into the repo:
+
+```
+docs/
+├── thesis/
+│   ├── BIS-28-Thesis.pdf.enc             # Encrypted 90+ page Capstone Thesis
+│   ├── BIS-28-Research-Paper.pdf.enc     # Encrypted Published Research Paper
+│   ├── BIS-28-Poster.pdf.enc             # Encrypted Academic Conference Poster
+│   └── Project-Completion-Report.pdf.enc # Encrypted Formal Project Sign-off Report
+├── reviews/
+│   ├── 01_First-Review_Template.ppt.enc  # Encrypted First Review Presentation
+│   ├── 02_Second-Review_Template.ppt.enc # Encrypted Second Review Presentation
+│   └── Final-Review.pptx.enc             # Encrypted Final Viva Presentation
+├── architecture/
+│   ├── face-recog-workflow.png           # Computer Vision Pipeline Diagram
+│   ├── project-flowchart.drawio          # System Flowchart (Draw.io)
+│   └── facenet-architecture.drawio       # Embedding Architecture (Draw.io)
+├── references/                           # 8 Encrypted Referenced Research Papers (.pdf.enc)
+├── screenshots/                          # Project UI & System Screenshots
+└── crypt_docs.py                         # Encryption/Decryption utility script
+```
 
 ---
 
-### 3. Android Client Setup
+## 📄 License
 
-*   The Android projects have been modernized to use **targetSdkVersion 34** (Android 14) and AndroidX libraries.
-*   Make sure you have Android SDK 34 installed.
-*   Place your generated `google-services.json` inside the `app/` folder.
-*   Build the application using Android Studio.
+This project is licensed under the **MIT License** — see the [LICENSE](./LICENSE) file for details.
 
 ---
 
-### 4. Firebase Cloud Functions
+<div align="center">
 
-1.  Navigate to `firecast/functions`.
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Set your FCM device target token in your environment or substitute the token in [index.js](file:///c:/projects/capstone-project/firecast/functions/index.js).
-4.  Deploy your functions and database rules using the Firebase CLI:
-    ```bash
-    firebase deploy
-    ```
+*Developed at Vellore Institute of Technology (VIT)*
+
+</div>

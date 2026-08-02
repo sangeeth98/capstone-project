@@ -3,54 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Room Occupancy Logs - Capstone Portal</title>
+    <title>Room Occupancy — SentinelAI</title>
+    <meta name="description" content="Track real-time room occupancy status and logs.">
     <link rel="stylesheet" href="./index.css">
 </head>
 <body>
-    <div class="panel panel-wide">
-        <h1>Room Occupancy Logs</h1>
-        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 30px;">
-            Search real-time occupancy status and logs by Room ID and date.
-        </p>
 
-        <form id="searchForm" onsubmit="return false;" style="max-width: 500px; margin: 0 auto;">
-            <div class="form-group">
-                <label class="form-label" for="Rid">Room ID</label>
-                <input type="text" id="Rid" class="form-input" placeholder="e.g. Room101" required>
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation">☰</button>
+
+    <div class="app-layout">
+
+        <!-- ═══ SIDEBAR ═══ -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-icon">🛡️</div>
+                <div class="sidebar-brand-text">SentinelAI</div>
             </div>
-            
-            <div class="form-group">
-                <label class="form-label" for="Rdate">Date (Optional)</label>
-                <input type="text" id="Rdate" class="form-input" placeholder="MM:DD:YYYY or YYYY-MM-DD">
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item"><span class="nav-item-icon">📊</span><span>Dashboard</span></a>
+                <a href="MonitoringPage.html" class="nav-item"><span class="nav-item-icon">🔍</span><span>Prisoner Monitoring</span></a>
+                <a href="RoomOccupiedPage.html" class="nav-item active"><span class="nav-item-icon">🏠</span><span>Room Occupancy</span></a>
+                <a href="EmpOperations.html" class="nav-item"><span class="nav-item-icon">👤</span><span>Employee Ops</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="login.html" class="nav-item"><span class="nav-item-icon">🚪</span><span>Sign Out</span></a>
+            </div>
+        </aside>
+
+        <!-- ═══ MAIN CONTENT ═══ -->
+        <main class="main-content">
+
+            <div class="page-header" style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <h1 class="page-title">Room Occupancy</h1>
+                    <p class="page-subtitle">Track occupancy status and motion detection logs by room.</p>
+                </div>
+                <div class="status-badge status-badge-live">
+                    <span class="status-dot"></span>
+                    Live
+                </div>
             </div>
 
-            <button type="submit" id="searchBtn" class="btn">
-                <span>Search Occupancy Logs</span>
-            </button>
-        </form>
+            <!-- Search Form -->
+            <div class="section-card">
+                <form id="searchForm" onsubmit="return false;" style="max-width: 500px;">
+                    <div class="form-group">
+                        <label class="form-label" for="Rid">Room ID</label>
+                        <input type="text" id="Rid" class="form-input" placeholder="e.g. R0088" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="Rdate">Date (Optional)</label>
+                        <input type="date" id="Rdate" class="form-input">
+                    </div>
+                    <button type="submit" id="searchBtn" class="btn btn-primary" style="max-width: 300px;">
+                        <span>🏠</span> <span>Search Occupancy Logs</span>
+                    </button>
+                </form>
+            </div>
 
-        <!-- Dynamic Results Container -->
-        <div id="resultsArea" style="margin-top: 30px;"></div>
+            <!-- Toolbar -->
+            <div class="toolbar hidden" id="resultsToolbar">
+                <div class="toolbar-group">
+                    <span style="font-size: 0.9rem; color: var(--text-secondary);" id="resultCount"></span>
+                </div>
+                <div class="toolbar-group">
+                    <button class="btn btn-secondary btn-sm" id="exportBtn">📥 Export CSV</button>
+                </div>
+            </div>
 
-        <div style="text-align: center; margin-top: 30px;">
-            <a href="connectiontofirebase.html" class="nav-link">← Back to Dashboard</a>
-        </div>
+            <!-- Dynamic Results -->
+            <div id="resultsArea"></div>
+
+        </main>
     </div>
 
-    <!-- Firebase v10 Modular Integration -->
+    <script src="./particles.js"></script>
+
     <script type="module">
         import { db } from "./firebase-config.js";
         import { ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-        import { showToast } from "./utils.js";
+        import { showToast, exportTableToCSV } from "./utils.js";
+
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
 
         document.getElementById("searchBtn").addEventListener("click", searchOccupiedData);
+        document.getElementById("exportBtn").addEventListener("click", () => {
+            exportTableToCSV("sentinelai-room-occupancy");
+        });
 
         async function searchOccupiedData() {
             const resultsArea = document.getElementById("resultsArea");
-            resultsArea.innerHTML = ""; // Clear existing tables
+            const toolbar = document.getElementById("resultsToolbar");
+            resultsArea.innerHTML = "";
+            toolbar.classList.add("hidden");
 
             const rid = document.getElementById("Rid").value.trim();
-            const rdate = document.getElementById("Rdate").value.trim();
+            const rdateInput = document.getElementById("Rdate").value;
 
             if (!rid) {
                 showToast("Please enter a Room ID.", "error");
@@ -63,8 +113,7 @@
             searchBtn.innerHTML = `<span class="spinner"></span> <span>Searching...</span>`;
 
             try {
-                // Fetch Room Occupied path
-                const occupiedRef = ref(db, `Room Occupied`);
+                const occupiedRef = ref(db, "Room Occupied");
                 const snapshot = await get(occupiedRef);
 
                 if (!snapshot.exists()) {
@@ -74,13 +123,14 @@
 
                 const occupiedData = snapshot.val();
                 if (!occupiedData.hasOwnProperty(rid)) {
-                    showToast("Wrong Room ID.", "error");
+                    showToast("Room ID not found in database.", "error");
                     return;
                 }
 
-                // If specific date is entered
-                if (rdate.length > 0) {
-                    const specificDayRef = ref(db, `Room Occupied/${rid}/${rdate}`);
+                let tableCount = 0;
+
+                if (rdateInput) {
+                    const specificDayRef = ref(db, `Room Occupied/${rid}/${rdateInput}`);
                     const dateSnapshot = await get(specificDayRef);
 
                     if (!dateSnapshot.exists()) {
@@ -88,9 +138,9 @@
                         return;
                     }
 
-                    createTable(rdate, dateSnapshot.val());
+                    createTable(rdateInput, dateSnapshot.val());
+                    tableCount = 1;
                 } else {
-                    // Fetch all logs for this Room
                     const allDataRef = ref(db, `Room Occupied/${rid}`);
                     const allSnapshot = await get(allDataRef);
                     const currValues = allSnapshot.val();
@@ -100,24 +150,23 @@
                         return;
                     }
 
-                    const keys = Object.keys(currValues);
-                    for (let i = 0; i < keys.length; i++) {
-                        const key = keys[i];
-                        const val = currValues[key];
-                        // Skip flag attributes like 'Occupied' or 'Unoccupied'
-                        if (key === "Occupied" || key === "Unoccupied") {
-                            continue;
-                        }
-                        
+                    for (const [key, val] of Object.entries(currValues)) {
+                        if (key === "Occupied" || key === "Unoccupied") continue;
                         if (typeof val === 'object' && val !== null) {
                             createTable(key, val);
                         } else {
                             createTable("General Logs", { [key]: val });
                         }
+                        tableCount++;
                     }
                 }
+
+                toolbar.classList.remove("hidden");
+                document.getElementById("resultCount").textContent = `${tableCount} date group${tableCount !== 1 ? 's' : ''} found`;
+                showToast(`Found ${tableCount} result group${tableCount !== 1 ? 's' : ''}.`, "success");
+
             } catch (error) {
-                console.error("Database fetch error: ", error);
+                console.error("Database fetch error:", error);
                 showToast("Database Error.", "error");
             } finally {
                 searchBtn.disabled = false;
@@ -130,50 +179,43 @@
 
             const tableContainer = document.createElement("div");
             tableContainer.className = "table-container";
-            tableContainer.style.marginBottom = "24px";
+            tableContainer.style.marginBottom = "20px";
 
             const table = document.createElement("table");
             table.className = "datatable";
 
             const caption = table.createCaption();
-            caption.innerHTML = `<b>Date: ${title}</b>`;
+            caption.innerHTML = `📅 <strong>${title}</strong>`;
 
-            // Table Header
             const thead = document.createElement("thead");
             const headingRow = document.createElement("tr");
-            
             const th1 = document.createElement("th");
             th1.textContent = "Time";
             headingRow.appendChild(th1);
-
             const th2 = document.createElement("th");
-            th2.textContent = "Location / Status";
+            th2.textContent = "Status";
             headingRow.appendChild(th2);
-
             thead.appendChild(headingRow);
             table.appendChild(thead);
 
-            // Table Body
             const tbody = document.createElement("tbody");
-            const keys = Object.keys(dataVal);
 
-            for (let i = 0; i < keys.length; i++) {
-                const timeKey = keys[i];
-                const locVal = dataVal[timeKey];
-
-                // Skip layout keys if they slip inside child nodes
-                if (timeKey === "Occupied" || timeKey === "Unoccupied") {
-                    continue;
-                }
+            for (const [timeKey, locVal] of Object.entries(dataVal)) {
+                if (timeKey === "Occupied" || timeKey === "Unoccupied") continue;
 
                 const row = document.createElement("tr");
-
                 const tdTime = document.createElement("td");
                 tdTime.textContent = timeKey;
                 row.appendChild(tdTime);
 
                 const tdLoc = document.createElement("td");
                 tdLoc.textContent = locVal;
+                // Color-code occupancy status
+                if (locVal === "Occupied") {
+                    tdLoc.style.color = "var(--accent-amber)";
+                } else if (locVal === "Unoccupied") {
+                    tdLoc.style.color = "var(--accent-emerald)";
+                }
                 row.appendChild(tdLoc);
 
                 tbody.appendChild(row);

@@ -3,54 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prisoner Monitoring - Capstone Portal</title>
+    <title>Prisoner Monitoring — SentinelAI</title>
+    <meta name="description" content="Search and trace real-time prisoner location logs by ID and date.">
     <link rel="stylesheet" href="./index.css">
 </head>
 <body>
-    <div class="panel panel-wide">
-        <h1>Prisoner Monitoring Logs</h1>
-        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 30px;">
-            Search real-time locations and tracking data.
-        </p>
 
-        <form id="searchForm" onsubmit="return false;" style="max-width: 500px; margin: 0 auto;">
-            <div class="form-group">
-                <label class="form-label" for="Pid">Prisoner ID</label>
-                <input type="text" id="Pid" class="form-input" placeholder="e.g. John" required>
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation">☰</button>
+
+    <div class="app-layout">
+
+        <!-- ═══ SIDEBAR ═══ -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-icon">🛡️</div>
+                <div class="sidebar-brand-text">SentinelAI</div>
             </div>
-            
-            <div class="form-group">
-                <label class="form-label" for="Pdate">Date (Optional)</label>
-                <input type="text" id="Pdate" class="form-input" placeholder="YYYY-MM-DD">
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item" id="nav-dashboard"><span class="nav-item-icon">📊</span><span>Dashboard</span></a>
+                <a href="MonitoringPage.html" class="nav-item active" id="nav-monitoring"><span class="nav-item-icon">🔍</span><span>Prisoner Monitoring</span></a>
+                <a href="RoomOccupiedPage.html" class="nav-item" id="nav-rooms"><span class="nav-item-icon">🏠</span><span>Room Occupancy</span></a>
+                <a href="EmpOperations.html" class="nav-item" id="nav-employees"><span class="nav-item-icon">👤</span><span>Employee Ops</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="login.html" class="nav-item" id="nav-logout"><span class="nav-item-icon">🚪</span><span>Sign Out</span></a>
+            </div>
+        </aside>
+
+        <!-- ═══ MAIN CONTENT ═══ -->
+        <main class="main-content">
+
+            <div class="page-header" style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <h1 class="page-title">Prisoner Monitoring</h1>
+                    <p class="page-subtitle">Search real-time locations and tracking data by ID.</p>
+                </div>
+                <div class="status-badge status-badge-live">
+                    <span class="status-dot"></span>
+                    Live
+                </div>
             </div>
 
-            <button type="submit" id="searchBtn" class="btn">
-                <span>Search Tracking Logs</span>
-            </button>
-        </form>
+            <!-- Search Form -->
+            <div class="section-card">
+                <form id="searchForm" onsubmit="return false;" style="max-width: 500px;">
+                    <div class="form-group">
+                        <label class="form-label" for="Pid">Prisoner ID</label>
+                        <input type="text" id="Pid" class="form-input" placeholder="e.g. John" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="Pdate">Date (Optional)</label>
+                        <input type="date" id="Pdate" class="form-input">
+                    </div>
+                    <button type="submit" id="searchBtn" class="btn btn-primary" style="max-width: 300px;">
+                        <span>🔍</span> <span>Search Tracking Logs</span>
+                    </button>
+                </form>
+            </div>
 
-        <!-- Dynamic Results Container -->
-        <div id="resultsArea" style="margin-top: 30px;"></div>
+            <!-- Toolbar for export -->
+            <div class="toolbar hidden" id="resultsToolbar">
+                <div class="toolbar-group">
+                    <span style="font-size: 0.9rem; color: var(--text-secondary);" id="resultCount"></span>
+                </div>
+                <div class="toolbar-group">
+                    <button class="btn btn-secondary btn-sm" id="exportBtn">📥 Export CSV</button>
+                </div>
+            </div>
 
-        <div style="text-align: center; margin-top: 30px;">
-            <a href="connectiontofirebase.html" class="nav-link">← Back to Dashboard</a>
-        </div>
+            <!-- Dynamic Results -->
+            <div id="resultsArea"></div>
+
+        </main>
     </div>
 
-    <!-- Firebase v10 Modular Integration -->
+    <script src="./particles.js"></script>
+
     <script type="module">
         import { db } from "./firebase-config.js";
-        import { ref, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-        import { showToast } from "./utils.js";
+        import { ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { showToast, exportTableToCSV } from "./utils.js";
+
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
 
         document.getElementById("searchBtn").addEventListener("click", searchMonitoringData);
+        document.getElementById("exportBtn").addEventListener("click", () => {
+            exportTableToCSV("sentinelai-monitoring-logs");
+        });
 
         async function searchMonitoringData() {
             const resultsArea = document.getElementById("resultsArea");
-            resultsArea.innerHTML = ""; // Clear existing tables
+            const toolbar = document.getElementById("resultsToolbar");
+            resultsArea.innerHTML = "";
+            toolbar.classList.add("hidden");
 
             const pid = document.getElementById("Pid").value.trim();
-            const pdate = document.getElementById("Pdate").value.trim();
+            const pdateInput = document.getElementById("Pdate").value;
 
             if (!pid) {
                 showToast("Please enter a Prisoner ID.", "error");
@@ -63,8 +113,7 @@
             searchBtn.innerHTML = `<span class="spinner"></span> <span>Searching...</span>`;
 
             try {
-                // Check if prisoner exists in Monitoring logs
-                const monitoringRef = ref(db, `Monitoring`);
+                const monitoringRef = ref(db, "Monitoring");
                 const snapshot = await get(monitoringRef);
 
                 if (!snapshot.exists()) {
@@ -74,19 +123,14 @@
 
                 const monitoringData = snapshot.val();
                 if (!monitoringData.hasOwnProperty(pid)) {
-                    showToast("Wrong Prisoner ID.", "error");
+                    showToast("Prisoner ID not found in database.", "error");
                     return;
                 }
 
-                // If specific date is entered
-                if (pdate.length > 0) {
-                    // Quick date regex check YYYY-MM-DD
-                    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-                    if (!datePattern.test(pdate)) {
-                        showToast("Wrong Date Format. Please use YYYY-MM-DD.", "error");
-                        return;
-                    }
+                let tableCount = 0;
 
+                if (pdateInput) {
+                    const pdate = pdateInput; // Already YYYY-MM-DD from date input
                     const specificDayRef = ref(db, `Monitoring/${pid}/${pdate}`);
                     const dateSnapshot = await get(specificDayRef);
 
@@ -96,8 +140,8 @@
                     }
 
                     createTable(pdate, dateSnapshot.val());
+                    tableCount = 1;
                 } else {
-                    // Fetch all logs for the prisoner
                     const allDataRef = ref(db, `Monitoring/${pid}`);
                     const allSnapshot = await get(allDataRef);
                     const currValues = allSnapshot.val();
@@ -107,21 +151,23 @@
                         return;
                     }
 
-                    const keys = Object.keys(currValues);
-                    for (let i = 0; i < keys.length; i++) {
-                        const key = keys[i];
-                        const val = currValues[key];
-                        // If it's a date folder containing time:location dictionary
+                    for (const [key, val] of Object.entries(currValues)) {
                         if (typeof val === 'object' && val !== null) {
                             createTable(key, val);
                         } else {
-                            // Flat log structure
                             createTable("General Logs", { [key]: val });
                         }
+                        tableCount++;
                     }
                 }
+
+                // Show toolbar
+                toolbar.classList.remove("hidden");
+                document.getElementById("resultCount").textContent = `${tableCount} date group${tableCount !== 1 ? 's' : ''} found`;
+                showToast(`Found ${tableCount} result group${tableCount !== 1 ? 's' : ''}.`, "success");
+
             } catch (error) {
-                console.error("Database fetch error: ", error);
+                console.error("Database fetch error:", error);
                 showToast("Database Error.", "error");
             } finally {
                 searchBtn.disabled = false;
@@ -134,18 +180,17 @@
 
             const tableContainer = document.createElement("div");
             tableContainer.className = "table-container";
-            tableContainer.style.marginBottom = "24px";
+            tableContainer.style.marginBottom = "20px";
 
             const table = document.createElement("table");
             table.className = "datatable";
 
             const caption = table.createCaption();
-            caption.innerHTML = `<b>Date: ${title}</b>`;
+            caption.innerHTML = `📅 <strong>${title}</strong>`;
 
-            // Table Header
             const thead = document.createElement("thead");
             const headingRow = document.createElement("tr");
-            
+
             const th1 = document.createElement("th");
             th1.textContent = "Time";
             headingRow.appendChild(th1);
@@ -157,16 +202,10 @@
             thead.appendChild(headingRow);
             table.appendChild(thead);
 
-            // Table Body
             const tbody = document.createElement("tbody");
-            const keys = Object.keys(dataVal);
 
-            for (let i = 0; i < keys.length; i++) {
-                const timeKey = keys[i];
-                const locVal = dataVal[timeKey];
-
+            for (const [timeKey, locVal] of Object.entries(dataVal)) {
                 const row = document.createElement("tr");
-
                 const tdTime = document.createElement("td");
                 tdTime.textContent = timeKey;
                 row.appendChild(tdTime);

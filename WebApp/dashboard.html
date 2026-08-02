@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Command Center — SentinelAI</title>
+    <meta name="description" content="SentinelAI admin dashboard for surveillance monitoring, room occupancy tracking, and employee management.">
+    <link rel="stylesheet" href="./index.css">
+</head>
+<body>
+
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation">☰</button>
+
+    <div class="app-layout">
+
+        <!-- ═══ SIDEBAR ═══ -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-icon">🛡️</div>
+                <div class="sidebar-brand-text">SentinelAI</div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item active" id="nav-dashboard">
+                    <span class="nav-item-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="MonitoringPage.html" class="nav-item" id="nav-monitoring">
+                    <span class="nav-item-icon">🔍</span>
+                    <span>Prisoner Monitoring</span>
+                </a>
+                <a href="RoomOccupiedPage.html" class="nav-item" id="nav-rooms">
+                    <span class="nav-item-icon">🏠</span>
+                    <span>Room Occupancy</span>
+                </a>
+                <a href="EmpOperations.html" class="nav-item" id="nav-employees">
+                    <span class="nav-item-icon">👤</span>
+                    <span>Employee Ops</span>
+                </a>
+
+                <div class="nav-divider"></div>
+
+                <a href="#" class="nav-item" id="nav-experimental" style="opacity: 0.5; pointer-events: none;">
+                    <span class="nav-item-icon">🧪</span>
+                    <span>Experimental</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="login.html" class="nav-item" id="nav-logout">
+                    <span class="nav-item-icon">🚪</span>
+                    <span>Sign Out</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- ═══ MAIN CONTENT ═══ -->
+        <main class="main-content">
+
+            <!-- Page Header -->
+            <div class="page-header" style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <h1 class="page-title">Command Center</h1>
+                    <p class="page-subtitle">System overview and quick navigation</p>
+                </div>
+                <div class="status-badge status-badge-live">
+                    <span class="status-dot"></span>
+                    System Online
+                </div>
+            </div>
+
+            <!-- ── Stats Grid ── -->
+            <div class="stats-grid">
+                <div class="stat-card" data-accent="blue">
+                    <div class="stat-label">Active Monitors</div>
+                    <div class="stat-value" id="stat-monitors" style="color: var(--accent-blue);">3</div>
+                    <div class="stat-change">Face + Motion + Room</div>
+                </div>
+                <div class="stat-card" data-accent="cyan">
+                    <div class="stat-label">Rooms Tracked</div>
+                    <div class="stat-value" id="stat-rooms" style="color: var(--accent-cyan);">—</div>
+                    <div class="stat-change" id="stat-rooms-change">Loading...</div>
+                </div>
+                <div class="stat-card" data-accent="emerald">
+                    <div class="stat-label">Registered Staff</div>
+                    <div class="stat-value" id="stat-staff" style="color: var(--accent-emerald);">—</div>
+                    <div class="stat-change" id="stat-staff-change">Loading...</div>
+                </div>
+                <div class="stat-card" data-accent="violet">
+                    <div class="stat-label">Today's Events</div>
+                    <div class="stat-value" id="stat-events" style="color: var(--accent-violet);">—</div>
+                    <div class="stat-change" id="stat-events-change">Loading...</div>
+                </div>
+            </div>
+
+            <!-- ── Module Cards ── -->
+            <div class="section-card">
+                <div class="section-title">
+                    <span class="section-title-icon">⚡</span>
+                    Quick Access
+                </div>
+
+                <div class="dashboard-grid">
+                    <!-- Prisoner Monitoring -->
+                    <a href="MonitoringPage.html" class="card">
+                        <div class="card-header">
+                            <div class="card-icon card-icon-blue">🔍</div>
+                            <span class="card-arrow">→</span>
+                        </div>
+                        <div class="card-title">Prisoner Monitoring</div>
+                        <div class="card-desc">Search and trace real-time location logs by prisoner ID and date. View detection timestamps and movement history.</div>
+                    </a>
+
+                    <!-- Room Occupancy -->
+                    <a href="RoomOccupiedPage.html" class="card">
+                        <div class="card-header">
+                            <div class="card-icon card-icon-cyan">🏠</div>
+                            <span class="card-arrow">→</span>
+                        </div>
+                        <div class="card-title">Room Occupancy</div>
+                        <div class="card-desc">Monitor room status in real-time. Track occupancy patterns, view logs by date, and identify activity trends.</div>
+                    </a>
+
+                    <!-- Employee Operations -->
+                    <a href="EmpOperations.html" class="card">
+                        <div class="card-header">
+                            <div class="card-icon card-icon-emerald">👤</div>
+                            <span class="card-arrow">→</span>
+                        </div>
+                        <div class="card-title">Employee Operations</div>
+                        <div class="card-desc">Register new employee IDs, reset status flags, and manage staff access to the surveillance system.</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- ── Recent Activity ── -->
+            <div class="section-card">
+                <div class="section-title">
+                    <span class="section-title-icon">📋</span>
+                    Recent Login Activity
+                </div>
+
+                <div class="activity-list" id="activityList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📡</div>
+                        <div class="empty-state-text">Loading activity feed...</div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Particle background -->
+    <script src="./particles.js"></script>
+
+    <!-- Dashboard Logic -->
+    <script type="module">
+        import { db } from "./firebase-config.js";
+        import { ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // ── Mobile sidebar toggle ──
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+
+        // ── Load live stats from Firebase ──
+        async function loadStats() {
+            try {
+                // Count rooms
+                const roomsSnap = await get(ref(db, "Room Occupied"));
+                if (roomsSnap.exists()) {
+                    const count = Object.keys(roomsSnap.val()).length;
+                    document.getElementById('stat-rooms').textContent = count;
+                    document.getElementById('stat-rooms-change').textContent = `${count} rooms in database`;
+                } else {
+                    document.getElementById('stat-rooms').textContent = '0';
+                    document.getElementById('stat-rooms-change').textContent = 'No rooms found';
+                }
+
+                // Count staff
+                const staffSnap = await get(ref(db, "Empids"));
+                if (staffSnap.exists()) {
+                    const count = Object.keys(staffSnap.val()).length;
+                    document.getElementById('stat-staff').textContent = count;
+                    document.getElementById('stat-staff-change').textContent = `${count} registered IDs`;
+                } else {
+                    document.getElementById('stat-staff').textContent = '0';
+                    document.getElementById('stat-staff-change').textContent = 'No staff registered';
+                }
+
+                // Today's login events
+                const today = new Date().toISOString().slice(0, 10);
+                const eventsSnap = await get(ref(db, `Login Activity/${today}`));
+                if (eventsSnap.exists()) {
+                    const count = Object.keys(eventsSnap.val()).length;
+                    document.getElementById('stat-events').textContent = count;
+                    document.getElementById('stat-events-change').textContent = `Logins today (${today})`;
+                } else {
+                    document.getElementById('stat-events').textContent = '0';
+                    document.getElementById('stat-events-change').textContent = 'No logins today';
+                }
+            } catch (e) {
+                console.error("Failed to load stats:", e);
+            }
+        }
+
+        // ── Load recent activity feed ──
+        async function loadActivity() {
+            const list = document.getElementById('activityList');
+            try {
+                const snap = await get(ref(db, "Login Activity"));
+                if (!snap.exists()) {
+                    list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">No login activity recorded yet.</div></div>`;
+                    return;
+                }
+
+                const data = snap.val();
+                const entries = [];
+
+                // Flatten date → time → empId into array
+                for (const [date, times] of Object.entries(data)) {
+                    if (typeof times === 'object') {
+                        for (const [time, empId] of Object.entries(times)) {
+                            entries.push({ date, time, empId });
+                        }
+                    }
+                }
+
+                // Sort by date+time descending, take latest 10
+                entries.sort((a, b) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`));
+                const latest = entries.slice(0, 10);
+
+                if (latest.length === 0) {
+                    list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">No login activity recorded.</div></div>`;
+                    return;
+                }
+
+                list.innerHTML = latest.map(e => `
+                    <div class="activity-item">
+                        <div class="activity-icon card-icon-blue">🔑</div>
+                        <div class="activity-text"><strong>${e.empId}</strong> signed in</div>
+                        <div class="activity-time">${e.date} ${e.time}</div>
+                    </div>
+                `).join('');
+
+            } catch (e) {
+                console.error("Failed to load activity:", e);
+                list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">Failed to load activity feed.</div></div>`;
+            }
+        }
+
+        loadStats();
+        loadActivity();
+    </script>
+</body>
+</html>
