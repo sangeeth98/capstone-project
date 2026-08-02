@@ -3,38 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Operations - Capstone Portal</title>
+    <title>Employee Operations — SentinelAI</title>
+    <meta name="description" content="Manage employee IDs and access permissions for the surveillance system.">
     <link rel="stylesheet" href="./index.css">
 </head>
 <body>
-    <div class="panel">
-        <h1>Employee Operations</h1>
-        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 30px;">
-            Add new employee records or reset presence/status logs.
-        </p>
 
-        <form id="empForm" onsubmit="return false;">
-            <div class="form-group">
-                <label class="form-label" for="empfield">Employee ID</label>
-                <input type="text" id="empfield" class="form-input" placeholder="e.g. EMP456" required autocomplete="off">
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation">☰</button>
+
+    <div class="app-layout">
+
+        <!-- ═══ SIDEBAR ═══ -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-icon">🛡️</div>
+                <div class="sidebar-brand-text">SentinelAI</div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item"><span class="nav-item-icon">📊</span><span>Dashboard</span></a>
+                <a href="MonitoringPage.html" class="nav-item"><span class="nav-item-icon">🔍</span><span>Prisoner Monitoring</span></a>
+                <a href="RoomOccupiedPage.html" class="nav-item"><span class="nav-item-icon">🏠</span><span>Room Occupancy</span></a>
+                <a href="EmpOperations.html" class="nav-item active"><span class="nav-item-icon">👤</span><span>Employee Ops</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="login.html" class="nav-item"><span class="nav-item-icon">🚪</span><span>Sign Out</span></a>
+            </div>
+        </aside>
+
+        <!-- ═══ MAIN CONTENT ═══ -->
+        <main class="main-content">
+
+            <div class="page-header">
+                <h1 class="page-title">Employee Operations</h1>
+                <p class="page-subtitle">Register new employee IDs, reset status flags, and view registered staff.</p>
             </div>
 
-            <div style="display: flex; gap: 16px; margin-top: 24px;">
-                <button type="button" id="addBtn" class="btn">
-                    <span>Add ID</span>
-                </button>
-                <button type="button" id="resetBtn" class="btn btn-secondary">
-                    <span>Reset Status</span>
-                </button>
-            </div>
-        </form>
+            <!-- Operations Form -->
+            <div class="section-card">
+                <div class="section-title">
+                    <span class="section-title-icon">⚙️</span>
+                    Quick Actions
+                </div>
 
-        <div style="text-align: center; margin-top: 30px;">
-            <a href="connectiontofirebase.html" class="nav-link">← Back to Dashboard</a>
-        </div>
+                <form id="empForm" onsubmit="return false;" style="max-width: 500px;">
+                    <div class="form-group">
+                        <label class="form-label" for="empfield">Employee ID</label>
+                        <input type="text" id="empfield" class="form-input" placeholder="e.g. EMP456" required autocomplete="off">
+                    </div>
+
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button type="button" id="addBtn" class="btn btn-primary" style="flex: 1; min-width: 140px;">
+                            <span>➕</span> <span>Add ID</span>
+                        </button>
+                        <button type="button" id="resetBtn" class="btn btn-danger" style="flex: 1; min-width: 140px;">
+                            <span>🔄</span> <span>Reset Status</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Registered Employees List -->
+            <div class="section-card">
+                <div class="section-title" style="justify-content: space-between;">
+                    <span style="display: flex; align-items: center; gap: 10px;">
+                        <span class="section-title-icon">📋</span>
+                        Registered Employees
+                    </span>
+                    <button class="btn btn-ghost btn-sm" id="refreshListBtn">🔄 Refresh</button>
+                </div>
+
+                <div id="employeeList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⏳</div>
+                        <div class="empty-state-text">Loading employee list...</div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
 
-    <!-- Load main script as ES6 module -->
-    <script type="module" src="./EmpOperations.js"></script>
+    <script src="./particles.js"></script>
+
+    <script type="module">
+        import { db } from "./firebase-config.js";
+        import { ref, set, remove, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { showToast, showConfirmDialog } from "./utils.js";
+
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('open');
+        });
+
+        document.getElementById("addBtn").addEventListener("click", addEmpId);
+        document.getElementById("resetBtn").addEventListener("click", confirmReset);
+        document.getElementById("refreshListBtn").addEventListener("click", loadEmployeeList);
+
+        async function confirmReset() {
+            const empId = document.getElementById("empfield").value.trim();
+            if (!empId) {
+                showToast("Please enter an Employee ID.", "error");
+                return;
+            }
+
+            const confirmed = await showConfirmDialog(
+                "Reset Employee Status",
+                `Are you sure you want to reset the status for <strong>${empId}</strong>? This will clear their presence flag and remove staff logs.`
+            );
+
+            if (confirmed) {
+                await resetStatus(empId);
+            }
+        }
+
+        async function resetStatus(empId) {
+            try {
+                const empIdRef = ref(db, `Empids/${empId}`);
+                await set(empIdRef, 0);
+
+                const staffRef = ref(db, `Staffs/${empId}`);
+                await remove(staffRef);
+
+                showToast(`Employee '${empId}' status reset successfully.`, "success");
+                loadEmployeeList();
+            } catch (error) {
+                console.error("Reset status error:", error);
+                showToast("Error resetting employee status.", "error");
+            }
+        }
+
+        async function addEmpId() {
+            const empId = document.getElementById("empfield").value.trim();
+            if (!empId) {
+                showToast("Please enter an Employee ID.", "error");
+                return;
+            }
+
+            try {
+                const empIdsRef = ref(db, "Empids");
+                const snapshot = await get(empIdsRef);
+
+                let currIds = {};
+                if (snapshot.exists()) {
+                    currIds = snapshot.val();
+                }
+
+                if (currIds && Object.prototype.hasOwnProperty.call(currIds, empId)) {
+                    showToast("Employee ID already exists.", "error");
+                } else {
+                    await update(empIdsRef, { [empId]: 0 });
+                    showToast(`Employee '${empId}' added successfully.`, "success");
+                    document.getElementById("empfield").value = "";
+                    loadEmployeeList();
+                }
+            } catch (error) {
+                console.error("Add employee ID error:", error);
+                showToast("Database connection error.", "error");
+            }
+        }
+
+        async function loadEmployeeList() {
+            const listContainer = document.getElementById("employeeList");
+
+            try {
+                const snapshot = await get(ref(db, "Empids"));
+
+                if (!snapshot.exists()) {
+                    listContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <div class="empty-state-text">No employees registered yet.</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const employees = snapshot.val();
+                const keys = Object.keys(employees);
+
+                let html = `
+                    <div class="table-container">
+                        <table class="datatable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Employee ID</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                keys.forEach((id, index) => {
+                    const statusVal = employees[id];
+                    const statusText = statusVal === 0 ? "Idle" : "Active";
+                    const statusColor = statusVal === 0 ? "var(--text-muted)" : "var(--accent-emerald)";
+
+                    html += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td><strong>${id}</strong></td>
+                            <td style="color: ${statusColor};">${statusText}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `</tbody></table></div>`;
+                html += `<p style="margin-top: 12px; font-size: 0.8rem; color: var(--text-muted);">${keys.length} employee${keys.length !== 1 ? 's' : ''} registered</p>`;
+
+                listContainer.innerHTML = html;
+
+            } catch (error) {
+                console.error("Failed to load employees:", error);
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <div class="empty-state-text">Failed to load employee list.</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Load on page init
+        loadEmployeeList();
+    </script>
 </body>
 </html>

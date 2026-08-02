@@ -1,71 +1,58 @@
-# Modernization Log & Pending Actions
+# SentinelAI — Modernization Changelog & Architecture Audit
 
-This document tracks all code quality, modernization, and security improvements applied to the Capstone project, along with a checklist of validation and testing steps that should be performed manually.
-
----
-
-## 🛠️ Completed Modernization Changes
-
-### 1. Web Application (`WebApp/`)
-*   **Modular Architecture**: Created [firebase-config.js](../WebApp/firebase-config.js) to initialize Firebase App and Realtime Database in a single central place using ES6 modules and Web SDK v10.
-*   **Design & Theme**: Created [index.css](../WebApp/index.css), implementing a premium glassmorphic dark theme with vibrant blue and teal accents, modern typography (Google Fonts Outfit), and styled custom tables.
-*   **Toast Notification System**: Created [utils.js](../WebApp/utils.js) to export a non-intrusive `showToast(msg, type)` alert helper, replacing all native browser `alert()` popups.
-*   **Refactored Views**:
-    *   **Login**: Rewrote `loginpract.html` and `loginpract.js` to use modules, modern variable scoping (`const`/`let`), async/await, and a loading spinner indicator on verification.
-    *   **Dashboard**: Redesigned `connectiontofirebase.html` as the central admin panel with interactive navigation cards for each module.
-    *   **Employee Logs**: Revamped `EmpOperations.html` and `EmpOperations.js` with structured input groups and optimized O(1) key check for employee existence.
-    *   **Monitoring & Occupancy**: Updated `MonitoringPage.html` and `RoomOccupiedPage.html` to query logs asynchronously using modular SDK syntax, printing results in responsive glassmorphic data tables. Fixed spelling typos ("Priosoner" and "Databse").
-
-### 2. Python Facial Recognition (`facial-recognition/`)
-*   **Environment & Dependency Management**: Set up a virtual environment powered by `uv`, declaring dependencies natively in [pyproject.toml](./pyproject.toml).
-*   **Inline Dependency Execution (PEP 723)**: Embedded inline metadata headers inside standalone scripts (`pi_face_recognition.py` and `encode_faces.py`) allowing one-shot execution via `uv run` without venv setup.
-*   **Robust Firebase Integration**: Refactored `pi_face_recognition.py` to use the official `firebase-admin` SDK with a fallback to the Firebase Realtime Database REST API if local service account credentials aren't configured.
-*   **Code Standards & Quality**: Rewrote scripts to strictly follow PEP 8 standards, wrapped execution inside `main()`, set up proper error handling, and replaced print statements with the standard `logging` library.
-
-### 3. Android Clients (`CapstonePrototype/` & `Application/`)
-*   **Platform Upgrades**: Upgraded compile and target SDKs to **API 34** (Android 14) and upgraded Gradle configurations (`Gradle 8.9` and `AGP 8.3.2`).
-*   **Support & Dependency Cleanup**: 
-    *   Replaced legacy Support Libraries (`com.android.support`) with modern AndroidX libraries.
-    *   Removed deprecated Kotlin plugins (`kotlin-android-extensions`).
-    *   Upgraded Firebase Database, Storage, Auth, Messaging, and Analytics dependencies to current stable releases.
-*   **Namespace Declaration**: Configured `namespace 'com.example.capstoneprototype'` inside module-level `build.gradle` blocks to satisfy AGP 8.x requirements.
-
-### 4. Firebase Cloud Functions (`firecast/functions/`)
-*   **Promise Lifecycle**: Refactored the database trigger in `index.js` to properly return messaging promise chains, ensuring the function container is not terminated before push notifications are successfully delivered.
-*   **Code Hygiene**: Standardized variable declarations to modern ES6 (`const`/`let`).
+This document records the complete transformation of SentinelAI from a college capstone project into a modern, portfolio-ready security platform.
 
 ---
 
-## 📋 Pending Actions & Verification Checklist
+## 📜 Full Modernization Changelog
 
-Since some components rely on local hardware (camera) and external accounts, the following manual validations should be performed:
+### Version 2.0.0 (August 2026) — Complete Project Revamp
 
-- [ ] **Web Application Login Flow**
-    - Open `loginpract.html` in a web browser.
-    - Test logging in using valid admin credentials matching your database records.
-    - Confirm redirection to the Admin Dashboard (`connectiontofirebase.html`).
-- [ ] **Web Application Realtime Queries**
-    - Search for a valid prisoner ID inside Prisoner Monitoring and verify table generation.
-    - Add an employee ID on the Employee Operations page and confirm it updates the database state correctly.
-- [ ] **Python Encodings & Recognition**
-    - Create a test `.env` file in `facial-recognition/` and configure `FIREBASE_DATABASE_URL`.
-    - Run face dataset encoding:
-      ```bash
-      uv run facial-recognition/encode_faces.py --dataset dataset --encodings encodings.pickle --detection-method hog
-      ```
-    - Run live video recognition:
-      ```bash
-      uv run facial-recognition/pi_face_recognition.py --cascade haarcascade_frontalface_default.xml --encodings encodings.pickle
-      ```
-    - Confirm the camera window opens, detects the target face, and patches updates to Firebase.
-- [ ] **Android Studio Integration & Sync**
-    - Import the Kotlin `CapstonePrototype` or Java `Application` project into Android Studio.
-    - Confirm Gradle syncs successfully with the upgraded AGP 8.3.2 and dependencies.
-    - Place your Firebase `google-services.json` inside the `app/` folder.
-    - Build and test debug APK generation.
-- [ ] **Cloud Functions Triggering**
-    - Deploy updated functions to Firebase via CLI:
-      ```bash
-      firebase deploy --only functions
-      ```
-    - Manually trigger an event in the `Emergencies/` database path and confirm standard FCM notifications are pushed to target device tokens.
+#### 1. Repository Reorganization & Academic Migration
+* **Google Drive Migration**: Extracted capstone thesis (`BIS-28-Thesis.pdf`), published research paper, project completion report, review PPTs (Reviews 1-3), architecture diagrams, and 8 IEEE/Springer reference papers from Google Drive into a structured `docs/` tree.
+* **Repository Cleanup**: 
+  * Removed 848 raw YOLO training data files (`data/` directory) to fix git bloat (dataset archived safely in Google Drive).
+  * Removed duplicate legacy Java Android project (`Application/`), establishing `CapstonePrototype/` (Kotlin) as canonical.
+  * Removed dead test scripts (`checkfirebase.py`).
+  * Untracked generated binaries (`encodings.pickle`) and credential files (`google-services.json`).
+  * Created comprehensive `.gitignore` with sections for Python, Android, Node, credentials, and OS files.
+
+#### 2. Web Application (`WebApp/`)
+* **Design System**: Replaced default styling with a command-center glassmorphism design system in `index.css` (Inter typography, custom scrollbars, toast notifications, confirmation modal dialogs).
+* **Particle Canvas**: Created `particles.js` to render an animated floating particle background.
+* **Command Center Dashboard**: Created `dashboard.html` with real-time stat cards (rooms, staff, today's logins) and live activity feed powered by Firebase RTDB.
+* **CSV Export Engine**: Added `exportTableToCSV()` utility across all monitoring and occupancy view pages.
+* **Security & Auth**: Sanitized `firebase-config.js` by replacing hardcoded credentials with placeholders and created `WebApp/.env.example`.
+
+#### 3. Python Computer Vision Engine (`facial-recognition/`)
+* **Motion Detector Modernization**: Rewrote `motion_detectorp3.py` → `motion_detector.py` with:
+  * PEP 723 inline dependency metadata block for `uv run` single-command execution.
+  * `firebase-admin` SDK with automatic REST API fallback.
+  * Structured `logging` replacing `print` statements.
+  * Command-line argument parsing (`--video`, `--room`, `--min-area`).
+  * PEP 8 compliance and ISO date formats (`YYYY-MM-DD`).
+* **Module Documentation**: Created `facial-recognition/README.md`.
+
+#### 4. Serverless Cloud Functions (`firecast/functions/`)
+* **API Modernization**: Upgraded from legacy Firebase Functions v1 (`functions.database.ref.onUpdate`) to Functions v2 (`onValueUpdated`).
+* **Runtime Upgrade**: Upgraded Node engine from Node 8 (EOL 2019) to Node 18 LTS.
+* **Security**: Removed hardcoded FCM device registration tokens — now reads from `process.env.FCM_DEVICE_TOKEN`.
+
+#### 5. Project Governance & Polish
+* **Banner Art**: Generated high-resolution digital artwork for the project header (`docs/assets/banner.png`).
+* **License Upgrade**: Re-licensed project from GPL v3 to MIT License for open-source portfolio presentation.
+* **GitHub Community Files**: Added `CONTRIBUTING.md`, `SECURITY.md`, and issue templates for bug reports and feature requests.
+* **Portfolio README**: Created a top-tier `README.md` with badges, architecture diagrams (Mermaid), module summaries, and quick-start instructions.
+
+---
+
+## 📋 Verification & Testing Checklist
+
+- [x] WebApp modular architecture & design system
+- [x] WebApp CSV export engine
+- [x] Python PEP 723 dependency isolation
+- [x] Python motion detector rewrite
+- [x] Cloud Functions Node 18 & v2 API upgrade
+- [x] Academic document migration from Google Drive
+- [x] Repository cleanup & credential sanitization
+- [x] MIT License & GitHub community templates

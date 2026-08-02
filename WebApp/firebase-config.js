@@ -1,16 +1,23 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// Your web app's Firebase configuration
+// ─── Firebase Configuration ───────────────────────────────────────────
+// Replace these placeholders with your Firebase project credentials.
+// See: https://firebase.google.com/docs/web/setup
+//
+// SECURITY: Never commit real credentials to version control.
+// Use environment-specific configuration for production deployments.
+// ──────────────────────────────────────────────────────────────────────
+
 const firebaseConfig = {
-    apiKey: "AIzaSyBkNkpSNjI4w_v6Ue0M34KSl8Spp_2KuUw",
-    authDomain: "capstone-prototype-7b1f9.firebaseapp.com",
-    databaseURL: "https://capstone-prototype-7b1f9.firebaseio.com",
-    projectId: "capstone-prototype-7b1f9",
-    storageBucket: "capstone-prototype-7b1f9.appspot.com",
-    messagingSenderId: "84439194622",
-    appId: "1:84439194622:web:78f3659951bd9e6e123eaf",
-    measurementId: "G-70RLHN723Z"
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID",
+    measurementId: "YOUR_MEASUREMENT_ID"
 };
 
 // Initialize Firebase
